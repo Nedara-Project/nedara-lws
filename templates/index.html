@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.blue.min.css"
+        />
+        <script
+            type="text/javascript"
+            src="{{ url_for('static', filename='lib/jquery_3.7.1.min.js') }}"
+        ></script>
+        <script
+            type="module"
+            src="{{ url_for('static', filename='lib/nedara_alpha.js') }}"
+        ></script>
+        <script
+            type="module"
+            src="{{ url_for('static', filename='lws.js') }}"
+        ></script>
+        <title>Nedara / LWS Manager</title>
+    </head>
+    <body>
+        <header>
+            <h3>Nedara</h3>
+            <h4>Linux Web Service Manager</h4>
+            <div>
+                <a href="#" class="toggle_theme_btn">Toggle theme</a>
+                {% if monitoring_url %} |
+                <a href="{{ monitoring_url }}" target="new"
+                    >Open Monitoring Tool</a
+                >
+                {% endif %}
+            </div>
+        </header>
+
+        <main>
+            <progress style="display: none"></progress>
+
+            <section>
+                <h4>Authentification</h4>
+                <div class="login" role="group">
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="Enter password"
+                        required
+                    />
+                    <button class="submit_password">Login</button>
+                </div>
+                <div class="success_auth" style="display: none">
+                    <ins><strong>You are authentified :-)</strong></ins>
+                </div>
+                <div class="error_auth" style="display: none">
+                    <mark><strong>Wrong password</strong></mark>
+                </div>
+            </section>
+
+            <section class="service_block" style="display: none">
+                <h4>Service</h4>
+                <select name="service" required>
+                    {% for service_key, service_name in services.items() %}
+                    <option value="{{ service_key }}">{{ service_key }}</option>
+                    {% endfor %}
+                </select>
+            </section>
+
+            {% if not disable_system_info and system_info %}
+            <section class="system_block" style="display: none">
+                <h4>System</h4>
+                <div>
+                    <p>
+                        <strong>VMemory Usage</strong> (Total: {{
+                        system_info.total_virtual_memory_gb }} Gio)
+                    </p>
+                    <progress
+                        value="{{ system_info.virtual_memory_usage_percentage }}"
+                        max="100"
+                    >
+                        {{ system_info.virtual_memory_usage_percentage }}%
+                    </progress>
+                    <p><strong>CPU Usage</strong></p>
+                    <progress
+                        value="{{ system_info.cpu_usage_percentage }}"
+                        max="100"
+                    >
+                        {{ system_info.cpu_usage_percentage }}%
+                    </progress>
+                    <p><strong>Swap Memory Usage</strong></p>
+                    <progress
+                        value="{{ system_info.swap_memory_usage_percentage }}"
+                        max="100"
+                    >
+                        {{ system_info.swap_memory_usage_percentage }}%
+                    </progress>
+                </div>
+                {% endif %} {% if not disable_system_info %}
+                <div>
+                    <button type="submit" name="action" value="system_info">
+                        Compute System Info
+                    </button>
+                </div>
+            </section>
+            {% endif %}
+
+            <section class="control_block" style="display: none">
+                <h4>Control</h4>
+                <div class="service_control" role="group">
+                    <button value="start">Start</button>
+                    <button value="stop">Stop</button>
+                    <button value="status">Status</button>
+                </div>
+            </section>
+
+            <section class="status_block" style="display: none">
+                <h4>Status</h4>
+                <article style="padding-bottom: 1px">
+                    <pre class="service_status" style="padding: 10px" />
+                </article>
+            </section>
+        </main>
+    </body>
+</html>
