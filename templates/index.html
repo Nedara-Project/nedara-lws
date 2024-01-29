@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Gringos Minos PalServer | Web Service</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css">
+        <style>
+            body {
+                background: url('https://images6.alphacoders.com/134/1348515.png') no-repeat center center fixed;
+                background-size: cover;
+                min-height: 100vh;
+                margin: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                color: white;
+            }
+            .container {
+                background: rgba(255, 255, 255, 0.95);
+                padding: 20px;
+                border-radius: 10px;
+            }
+        </style>
+    </head>
+    <body class="has-background-light has-text-dark">
+        <section class="section">
+            <div class="container">
+                <h1 class="title is-1 has-text-weight-bold">Gringos Minos — Palworld</h1>
+                <h2 class="title is-4">Service Control</h2>
+                <form action="/action" method="post" class="mt-4">
+                    <div class="field">
+                        <label class="label">Password</label>
+                        <div class="control">
+                            <input class="input {{ password_status }}" type="password" name="password" placeholder="Enter password" required>
+                        </div>
+                    </div>
+                    <div class="buttons mt-4">
+                        <button type="submit" class="button is-success" name="action" value="start">Start Service</button>
+                        <button type="submit" class="button is-danger" name="action" value="stop">Stop Service</button>
+                        <button type="submit" class="button is-info" name="action" value="status">Get Status</button>
+                    </div>
+                </form>
+                <div class="mt-5">
+                    <h4 class="title is-4">Service Status</h4>
+                    <pre>{{ status }}</pre>
+                </div>
+            </div>
+        </section>
+    </body>
+</html>
