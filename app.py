@@ -6,7 +6,7 @@ import subprocess
 app = Flask(__name__)
 service_name = "palworld.service"
 password = "palworld3f"
-flasksudo_user = "flasksudo"
+systemctl_path = "/bin/systemctl"
 
 """
 'flasksudo' user to use - HOWTO:
@@ -19,7 +19,8 @@ flasksudo ALL=(ALL:ALL) NOPASSWD:ALL
 
 @app.route('/')
 def index():
-    status = get_service_status(service_name)
+    #status = get_service_status(service_name)
+    status = 'You must enter password'
     return render_template('index.html', status=status)
 
 
@@ -30,10 +31,10 @@ def perform_action():
     if entered_password == password:
         action = request.form.get('action')
         if action == "start":
-            start_service_command = ["sudo", "-u", flasksudo_user, "systemctl", "start", service_name]
+            start_service_command = [systemctl_path, "start", service_name]
             subprocess.run(start_service_command)
         elif action == "stop":
-            stop_service_command = ["sudo", "-u", flasksudo_user, "systemctl", "stop", service_name]
+            stop_service_command = [systemctl_path, "stop", service_name]
             subprocess.run(stop_service_command)
         elif action == "status":
             status = get_service_status(service_name)
@@ -42,7 +43,7 @@ def perform_action():
 
 
 def get_service_status(service):
-    status_command = ["sudo", "-u", flasksudo_user, "systemctl", "status", service]
+    status_command = [systemctl_path, "status", service]
     result = subprocess.run(status_command, capture_output=True, text=True)
     return result.stdout.strip()
 
