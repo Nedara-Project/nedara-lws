@@ -19,7 +19,7 @@ flasksudo ALL=(ALL:ALL) NOPASSWD:ALL
 
 @app.route('/')
 def index():
-    #status = get_service_status(service_name)
+    # status = get_service_status(service_name)
     status = 'You must enter password'
     return render_template('index.html', status=status)
 
@@ -31,17 +31,16 @@ def perform_action():
     if entered_password == password:
         action = request.form.get('action')
         if action == "start":
-            start_service_command = [systemctl_path, "start", service_name]
+            start_service_command = ["sudo", "-n", systemctl_path, "start", service_name]
             subprocess.run(start_service_command)
             status = 'The service has started!'
         elif action == "stop":
-            stop_service_command = [systemctl_path, "stop", service_name]
+            stop_service_command = ["sudo", "-n", systemctl_path, "stop", service_name]
             subprocess.run(stop_service_command)
             status = 'The service has been stopped!'
         elif action == "status":
             status = get_service_status(service_name)
-            return render_template('index.html', status=status, password_status=password_status)
-    return render_template('index.html', password_status=password_status)
+    return render_template('index.html', status=status, password_status=password_status)
 
 
 def get_service_status(service):
