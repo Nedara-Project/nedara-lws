@@ -29,6 +29,7 @@ def index():
 def perform_action():
     entered_password = request.form.get('password')
     password_status = "is-danger" if entered_password != password else "is-success"
+    status = 'Wrong password!'
     if entered_password == password:
         action = request.form.get('action')
         if action == "start":
