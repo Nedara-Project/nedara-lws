@@ -33,9 +33,11 @@ def perform_action():
         if action == "start":
             start_service_command = [systemctl_path, "start", service_name]
             subprocess.run(start_service_command)
+            status = 'The service has started!'
         elif action == "stop":
             stop_service_command = [systemctl_path, "stop", service_name]
             subprocess.run(stop_service_command)
+            status = 'The service has been stopped!'
         elif action == "status":
             status = get_service_status(service_name)
             return render_template('index.html', status=status, password_status=password_status)
