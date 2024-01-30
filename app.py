@@ -7,6 +7,7 @@ app = Flask(__name__)
 service_name = "palworld.service"
 password = "palworld3f"
 systemctl_path = "/bin/systemctl"
+sudo_path = "/bin/sudo"
 
 """
 'flasksudo' user to use - HOWTO:
@@ -31,11 +32,11 @@ def perform_action():
     if entered_password == password:
         action = request.form.get('action')
         if action == "start":
-            start_service_command = ["sudo", "-n", systemctl_path, "start", service_name]
+            start_service_command = [sudo_path, "-n", systemctl_path, "start", service_name]
             subprocess.run(start_service_command)
             status = 'The service has started!'
         elif action == "stop":
-            stop_service_command = ["sudo", "-n", systemctl_path, "stop", service_name]
+            stop_service_command = [sudo_path, "-n", systemctl_path, "stop", service_name]
             subprocess.run(stop_service_command)
             status = 'The service has been stopped!'
         elif action == "status":
