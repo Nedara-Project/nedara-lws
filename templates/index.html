@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Gringos Minos PalServer | Web Service</title>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css">
         <style>
             body {
                 background: url('https://images6.alphacoders.com/134/1348515.png') no-repeat center center fixed;
@@ -28,7 +28,18 @@
         <section class="section">
             <div class="container">
                 <h1 class="title is-1 has-text-weight-bold">Gringos Minos — Palworld</h1>
-                <h2 class="title is-4">Service Control</h2>
+                <h4 class="title is-4">System Status</h4>
+                <div class="mb-3">
+                    <ul>
+                        <li>CPU Usage (%): {{ system_info.cpu_usage_percentage }}</li>
+                        <li>VMemory Usage (%): {{ system_info.virtual_memory_usage_percentage }}</li>
+                        <li>VMemory Usage (GB): {{ system_info.virtual_memory_usage_gb }}</li>
+                        <li>Total VMemory (GB): {{ system_info.total_virtual_memory_gb }}</li>
+                        <li>Swap Memory Usage (%): {{ system_info.swap_memory_usage_percentage }}</li>
+                        <li>Swap Memory Usage (GB): {{ system_info.swap_memory_usage_gb }}</li>
+                    </ul>
+                </div>
+                <h4 class="title is-4">Service Control</h4>
                 <form action="/action" method="post" class="mt-4">
                     <div class="field">
                         <label class="label">Password</label>

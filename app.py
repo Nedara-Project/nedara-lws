@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from flask import Flask, render_template, request
 import subprocess
+import psutil
+from flask import Flask, render_template, request
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'palworld3f!flaskappservice'
+
 service_name = "palworld.service"
 password = "palworld3f"
 systemctl_path = "/bin/systemctl"
@@ -18,11 +21,21 @@ flasksudo ALL=(ALL:ALL) NOPASSWD:ALL
 """
 
 
+def _get_system_info():
+    return {
+        'cpu_usage_percentage': psutil.cpu_percent(4),
+        'virtual_memory_usage_percentage': psutil.virtual_memory()[2],
+        'virtual_memory_usage_gb': round(psutil.virtual_memory()[3]/1000000000, 2),
+        'total_virtual_memory_gb': round(psutil.virtual_memory()[0]/1000000000, 2),
+        'swap_memory_usage_percentage': psutil.swap_memory()[3]/1000000000,
+        'swap_memory_usage_gb': round(psutil.swap_memory()[3]/1000000000, 2),
+    }
+
+
 @app.route('/')
 def index():
-    # status = get_service_status(service_name)
     status = 'You must enter password'
-    return render_template('index.html', status=status)
+    return render_template('index.html', status=status, system_info=_get_system_info())
 
 
 @app.route('/action', methods=['POST'])
@@ -42,7 +55,7 @@ def perform_action():
             status = 'The service has been stopped!'
         elif action == "status":
             status = get_service_status(service_name)
-    return render_template('index.html', status=status, password_status=password_status)
+    return render_template('index.html', status=status, password_status=password_status, system_info=_get_system_info())
 
 
 def get_service_status(service):
@@ -52,4 +65,4 @@ def get_service_status(service):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(app, debug=True)
