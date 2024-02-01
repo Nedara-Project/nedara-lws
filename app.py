@@ -22,13 +22,14 @@ flasksudo ALL=(ALL:ALL) NOPASSWD:ALL
 
 
 def _get_system_info():
+    gio = 1073741824
     return {
         'cpu_usage_percentage': psutil.cpu_percent(4),
         'virtual_memory_usage_percentage': psutil.virtual_memory()[2],
-        'virtual_memory_usage_gb': round(psutil.virtual_memory()[3]/1000000000, 2),
-        'total_virtual_memory_gb': round(psutil.virtual_memory()[0]/1000000000, 2),
-        'swap_memory_usage_percentage': psutil.swap_memory()[3]/1000000000,
-        'swap_memory_usage_gb': round(psutil.swap_memory()[3]/1000000000, 2),
+        'virtual_memory_usage_gb': round(psutil.virtual_memory()[3]/gio, 2),
+        'total_virtual_memory_gb': round(psutil.virtual_memory()[0]/gio, 2),
+        'swap_memory_usage_percentage': psutil.swap_memory()[3]/gio,
+        'swap_memory_usage_gb': round(psutil.swap_memory()[3]/gio, 2),
     }
 
 
