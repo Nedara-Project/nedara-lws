@@ -33,17 +33,24 @@ def _get_system_info():
     }
 
 
+def _get_service_status(service):
+    status_command = [systemctl_path, "status", service]
+    result = subprocess.run(status_command, capture_output=True, text=True)
+    return result.stdout.strip()
+
+
 @app.route('/')
 def index():
     status = 'You must enter password'
-    return render_template('index.html', status=status, system_info=_get_system_info())
+    return render_template('index.html', status=status, system_info={})
 
 
 @app.route('/action', methods=['POST'])
 def perform_action():
     entered_password = request.form.get('password')
-    password_status = "is-danger" if entered_password != password else "is-success"
-    status = 'Wrong password!'
+    password_status = "is-invalid" if entered_password != password else "is-valid"
+    status = 'Wrong password!' if entered_password != password else 'Valid password!'
+    system_info = {}
     if entered_password == password:
         action = request.form.get('action')
         if action == "start":
@@ -55,14 +62,10 @@ def perform_action():
             subprocess.run(stop_service_command)
             status = 'The service has been stopped!'
         elif action == "status":
-            status = get_service_status(service_name)
-    return render_template('index.html', status=status, password_status=password_status, system_info=_get_system_info())
-
-
-def get_service_status(service):
-    status_command = [systemctl_path, "status", service]
-    result = subprocess.run(status_command, capture_output=True, text=True)
-    return result.stdout.strip()
+            status = _get_service_status(service_name)
+        elif action == "system_info":
+            system_info = _get_system_info()
+    return render_template('index.html', status=status, password_status=password_status, system_info=system_info)
 
 
 if __name__ == '__main__':
