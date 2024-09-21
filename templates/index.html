@@ -1,66 +1,156 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" data-bs-theme="light">
     <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Gringos Minos PalServer | Web Service</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Linux Web Service Manager</title>
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+            crossorigin="anonymous"
+        />
     </head>
     <body>
         <div class="container">
             <form action="/action" method="post" class="mt-4">
                 <div class="mt-5">
                     <div class="text-center bg-body-tertiary rounded-3 p-5">
-                        <h1 class="text-body-emphasis">Gringos Minos — Palworld Server</h1>
+                        <h1 class="text-body-emphasis">
+                            Linux Web Service Manager
+                        </h1>
                         <div class="d-inline-flex gap-2 mb-3">
-                            <a href="https://www.battlemetrics.com/servers/palworld/25835641" target="_blank" class="d-inline-flex align-items-center btn btn-primary btn-lg px-4 rounded-pill" type="button">
-                                Open Battlemetrics
-                            </a>
-                            <button id="toggleThemeButton" type="button" class="d-inline-flex align-items-center btn btn-secondary btn-lg px-4 rounded-pill">Switch theme</button>
+                            <button
+                                id="toggleThemeButton"
+                                type="button"
+                                class="d-inline-flex align-items-center btn btn-secondary btn-lg px-4 rounded-pill"
+                            >
+                                Switch theme
+                            </button>
                         </div>
                     </div>
+                </div>
+                <!-- Service Selection -->
+                <div class="mt-5">
+                    <h2>Select Service</h2>
+                    <select name="service" class="form-select" required>
+                        {% for service_key, service_name in services.items() %}
+                        <option value="{{ service_key }}">
+                            {{ service_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
                 </div>
                 <!-- Password -->
                 <div class="mt-5">
                     <h2>Password</h2>
-                    <input type="password" class="form-control {{ password_status }}" type="password" name="password" placeholder="Enter password" required>
+                    <input
+                        type="password"
+                        class="form-control {{ password_status }}"
+                        name="password"
+                        placeholder="Enter password"
+                        required
+                    />
                 </div>
                 <!-- System Status -->
                 <section class="mt-5">
                     <h2>System Status</h2>
-                    <div class="card p-2 mb-3 {{ not system_info.virtual_memory_usage_percentage and 'd-none' }}">
-                        <span class="fw-bold">VMemory Usage <i>(Total: {{ system_info.total_virtual_memory_gb }} Gio)</i></span>
-                        <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100">
-                            <div class="progress-bar" style="width: {{ system_info.virtual_memory_usage_percentage }}%">
-                                {{ system_info.virtual_memory_usage_percentage }}% — {{ system_info.virtual_memory_usage_gb }} Gio
+                    <div
+                        class="card p-2 mb-3 {{ not system_info.virtual_memory_usage_percentage and 'd-none' }}"
+                    >
+                        <span class="fw-bold"
+                            >VMemory Usage
+                            <i
+                                >(Total: {{ system_info.total_virtual_memory_gb
+                                }} Gio)</i
+                            ></span
+                        >
+                        <div
+                            class="progress"
+                            role="progressbar"
+                            aria-valuemin="0"
+                            aria-valuemax="100"
+                        >
+                            <div
+                                class="progress-bar"
+                                style="width: {{ system_info.virtual_memory_usage_percentage }}%"
+                            >
+                                {{ system_info.virtual_memory_usage_percentage
+                                }}% — {{ system_info.virtual_memory_usage_gb }}
+                                Gio
                             </div>
                         </div>
                         <span class="fw-bold">CPU Usage</span>
-                        <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100">
-                            <div class="progress-bar bg-info" style="width: {{ system_info.cpu_usage_percentage }}%">
+                        <div
+                            class="progress"
+                            role="progressbar"
+                            aria-valuemin="0"
+                            aria-valuemax="100"
+                        >
+                            <div
+                                class="progress-bar bg-info"
+                                style="width: {{ system_info.cpu_usage_percentage }}%"
+                            >
                                 {{ system_info.cpu_usage_percentage }}%
                             </div>
                         </div>
                         <span class="fw-bold">Swap Memory Usage</span>
-                        <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100">
-                            <div class="progress-bar bg-warning" style="width: {{ system_info.swap_memory_usage_percentage }}%">
-                                {{ system_info.swap_memory_usage_percentage }}% — {{ system_info.swap_memory_usage_gb }} Gio
+                        <div
+                            class="progress"
+                            role="progressbar"
+                            aria-valuemin="0"
+                            aria-valuemax="100"
+                        >
+                            <div
+                                class="progress-bar bg-warning"
+                                style="width: {{ system_info.swap_memory_usage_percentage }}%"
+                            >
+                                {{ system_info.swap_memory_usage_percentage }}%
+                                — {{ system_info.swap_memory_usage_gb }} Gio
                             </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-info" name="action" value="system_info">Compute System Info</button>
+                    <button
+                        type="submit"
+                        class="btn btn-info"
+                        name="action"
+                        value="system_info"
+                    >
+                        Compute System Info
+                    </button>
                 </section>
                 <!-- Service Control -->
                 <section class="mt-5">
                     <h2>Service Control</h2>
                     <div class="btn-group w-100" role="group">
-                        <button type="submit" class="btn btn-primary" name="action" value="start">Start Service</button>
-                        <button type="submit" class="btn btn-danger" name="action" value="stop">Stop Service</button>
-                        <button type="submit" class="btn btn-info" name="action" value="status">Get Status</button>
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                            name="action"
+                            value="start"
+                        >
+                            Start Service
+                        </button>
+                        <button
+                            type="submit"
+                            class="btn btn-danger"
+                            name="action"
+                            value="stop"
+                        >
+                            Stop Service
+                        </button>
+                        <button
+                            type="submit"
+                            class="btn btn-info"
+                            name="action"
+                            value="status"
+                        >
+                            Get Status
+                        </button>
                     </div>
                 </section>
                 <!-- Service Status -->
-                <section class="mt-5">
+                <section class="mt-5 mb-5">
                     <h2>Service Status</h2>
                     <div class="card p-2">
                         <pre class="fw-bold mb-0">{{ status }}</pre>
@@ -68,96 +158,137 @@
                 </section>
             </form>
         </div>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+            crossorigin="anonymous"
+        ></script>
         <script>
             /*!
-            * Color mode toggler for Bootstrap's docs (https://getbootstrap.com/)
-            * Copyright 2011-2023 The Bootstrap Authors
-            * Licensed under the Creative Commons Attribution 3.0 Unported License.
-            */
+             * Color mode toggler for Bootstrap's docs (https://getbootstrap.com/)
+             * Copyright 2011-2023 The Bootstrap Authors
+             * Licensed under the Creative Commons Attribution 3.0 Unported License.
+             */
             (() => {
-                'use strict'
+                "use strict";
 
-                const getStoredTheme = () => localStorage.getItem('theme')
-                const setStoredTheme = theme => localStorage.setItem('theme', theme)
+                const getStoredTheme = () => localStorage.getItem("theme");
+                const setStoredTheme = (theme) =>
+                    localStorage.setItem("theme", theme);
 
                 const getPreferredTheme = () => {
-                    const storedTheme = getStoredTheme()
+                    const storedTheme = getStoredTheme();
                     if (storedTheme) {
-                        return storedTheme
+                        return storedTheme;
                     }
 
-                    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-                }
+                    return window.matchMedia("(prefers-color-scheme: dark)")
+                        .matches
+                        ? "dark"
+                        : "light";
+                };
 
-                const setTheme = theme => {
-                    if (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                        document.documentElement.setAttribute('data-bs-theme', 'dark')
+                const setTheme = (theme) => {
+                    if (
+                        theme === "auto" &&
+                        window.matchMedia("(prefers-color-scheme: dark)")
+                            .matches
+                    ) {
+                        document.documentElement.setAttribute(
+                            "data-bs-theme",
+                            "dark",
+                        );
                     } else {
-                        document.documentElement.setAttribute('data-bs-theme', theme)
+                        document.documentElement.setAttribute(
+                            "data-bs-theme",
+                            theme,
+                        );
                     }
-                }
+                };
 
-                setTheme(getPreferredTheme())
+                setTheme(getPreferredTheme());
 
                 const showActiveTheme = (theme, focus = false) => {
-                    const themeSwitcher = document.querySelector('#bd-theme')
+                    const themeSwitcher = document.querySelector("#bd-theme");
 
                     if (!themeSwitcher) {
-                        return
+                        return;
                     }
 
-                    const themeSwitcherText = document.querySelector('#bd-theme-text')
-                    const activeThemeIcon = document.querySelector('.theme-icon-active use')
-                    const btnToActive = document.querySelector(`[data-bs-theme-value="${theme}"]`)
-                    const svgOfActiveBtn = btnToActive.querySelector('svg use').getAttribute('href')
+                    const themeSwitcherText =
+                        document.querySelector("#bd-theme-text");
+                    const activeThemeIcon = document.querySelector(
+                        ".theme-icon-active use",
+                    );
+                    const btnToActive = document.querySelector(
+                        `[data-bs-theme-value="${theme}"]`,
+                    );
+                    const svgOfActiveBtn = btnToActive
+                        .querySelector("svg use")
+                        .getAttribute("href");
 
-                    document.querySelectorAll('[data-bs-theme-value]').forEach(element => {
-                        element.classList.remove('active')
-                        element.setAttribute('aria-pressed', 'false')
-                    })
+                    document
+                        .querySelectorAll("[data-bs-theme-value]")
+                        .forEach((element) => {
+                            element.classList.remove("active");
+                            element.setAttribute("aria-pressed", "false");
+                        });
 
-                    btnToActive.classList.add('active')
-                    btnToActive.setAttribute('aria-pressed', 'true')
-                    activeThemeIcon.setAttribute('href', svgOfActiveBtn)
-                    const themeSwitcherLabel = `${themeSwitcherText.textContent} (${btnToActive.dataset.bsThemeValue})`
-                    themeSwitcher.setAttribute('aria-label', themeSwitcherLabel)
+                    btnToActive.classList.add("active");
+                    btnToActive.setAttribute("aria-pressed", "true");
+                    activeThemeIcon.setAttribute("href", svgOfActiveBtn);
+                    const themeSwitcherLabel = `${themeSwitcherText.textContent} (${btnToActive.dataset.bsThemeValue})`;
+                    themeSwitcher.setAttribute(
+                        "aria-label",
+                        themeSwitcherLabel,
+                    );
 
                     if (focus) {
-                        themeSwitcher.focus()
+                        themeSwitcher.focus();
                     }
-                }
+                };
 
-                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-                    const storedTheme = getStoredTheme()
-                    if (storedTheme !== 'light' && storedTheme !== 'dark') {
-                        setTheme(getPreferredTheme())
-                    }
-                })
+                window
+                    .matchMedia("(prefers-color-scheme: dark)")
+                    .addEventListener("change", () => {
+                        const storedTheme = getStoredTheme();
+                        if (storedTheme !== "light" && storedTheme !== "dark") {
+                            setTheme(getPreferredTheme());
+                        }
+                    });
 
-                window.addEventListener('DOMContentLoaded', () => {
-                    showActiveTheme(getPreferredTheme())
+                window.addEventListener("DOMContentLoaded", () => {
+                    showActiveTheme(getPreferredTheme());
 
-                    document.querySelectorAll('[data-bs-theme-value]')
-                        .forEach(toggle => {
-                                toggle.addEventListener('click', () => {
-                                const theme = toggle.getAttribute('data-bs-theme-value')
-                                setStoredTheme(theme)
-                                setTheme(theme)
-                                showActiveTheme(theme, true)
-                            })
-                        })
-                })
+                    document
+                        .querySelectorAll("[data-bs-theme-value]")
+                        .forEach((toggle) => {
+                            toggle.addEventListener("click", () => {
+                                const theme = toggle.getAttribute(
+                                    "data-bs-theme-value",
+                                );
+                                setStoredTheme(theme);
+                                setTheme(theme);
+                                showActiveTheme(theme, true);
+                            });
+                        });
+                });
 
                 // Custom
-                document.getElementById('toggleThemeButton').addEventListener('click', () => {
-                    const currentTheme = document.documentElement.getAttribute('data-bs-theme');
-                    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-                    setTheme(newTheme);
-                    setStoredTheme(newTheme);
-                    showActiveTheme(newTheme, true);
-                });
-            })()
+                document
+                    .getElementById("toggleThemeButton")
+                    .addEventListener("click", () => {
+                        const currentTheme =
+                            document.documentElement.getAttribute(
+                                "data-bs-theme",
+                            );
+                        const newTheme =
+                            currentTheme === "light" ? "dark" : "light";
+                        setTheme(newTheme);
+                        setStoredTheme(newTheme);
+                        showActiveTheme(newTheme, true);
+                    });
+            })();
         </script>
     </body>
 </html>
