@@ -10,7 +10,8 @@ app.config['SECRET_KEY'] = 'multilinuxservice!flaskappservice'
 services = {
     "palworld": "palworld.service",
     "satisfactory": "satisfactory.service",
-  	"valheim": "valheim.service",
+    "valheim": "valheim.service",
+    "crafty": "crafty.service",
 }
 password = "admin"
 systemctl_path = "/bin/systemctl"
