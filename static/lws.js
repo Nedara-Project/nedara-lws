@@ -1,6 +1,6 @@
 "use strict";
 
-import Nedara from "/static/lib/nedara_alpha.js";
+import Nedara from "/static/lib/nedara/nedara.min.js";
 
 const lwsMain = Nedara.createWidget({
     selector: "body",
