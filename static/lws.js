@@ -58,13 +58,9 @@ const lwsMain = Nedara.createWidget({
     _onToggleThemeBtnClick: function () {
         let $html = this.$container.find("html");
         let themeAttr = $html.attr("data-theme");
-        if (!themeAttr) {
-            $html.attr("data-theme", "light");
-            localStorage.setItem("theme", "light");
-        } else {
-            $html.removeAttr("data-theme");
-            localStorage.setItem("theme", "dark");
-        }
+        let theme = themeAttr === 'light' ? 'dark' : 'light';
+        $html.attr("data-theme", theme);
+        localStorage.setItem("theme", theme);
     },
     _onServiceControlBtnClick: function (ev) {
         let self = this;
