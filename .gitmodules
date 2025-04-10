@@ -1,0 +1,3 @@
+[submodule "static/lib/nedara"]
+	path = static/lib/nedara
+	url = https://github.com/Nedara-Project/nedarajs.git
