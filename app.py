@@ -8,26 +8,37 @@ import json
 from flask import Flask, render_template, request
 from cryptography.fernet import Fernet
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'YOUR_SECRET_KEY'
 
-
-# ************************************************************
-# Functions
-# ************************************************************
-
-
-def load_services_config(config_file="config.json"):
+def load_full_config(config_file="config.json"):
     try:
         with open(config_file, 'r') as f:
-            config = json.load(f)
-            return config.get("services", {})
+            return json.load(f)
     except FileNotFoundError:
         print(f"Error: Configuration file '{config_file}' not found.")
         return {}
     except json.JSONDecodeError:
         print(f"Error: The file '{config_file}' is not a valid JSON.")
         return {}
+
+CONFIG = load_full_config()
+app = Flask(__name__)
+app.config['SECRET_KEY'] = CONFIG.get("secret_key", "")
+
+SERVICES = CONFIG.get("services", {})
+SESSIONS = []
+SYSTEMCTL_PATH = "/bin/systemctl"
+SUDO_PATH = "/bin/sudo"
+DEBUG = CONFIG.get("debug", False)
+MONITORING_URL = CONFIG.get("monitoring_url", "")
+DISABLE_SYSTEM_INFO = CONFIG.get("disable_system_info", True)
+
+KEY = CONFIG.get("fernet_key", "").encode()
+TOKEN_APP = CONFIG.get("token_app", "").encode()
+
+
+# ************************************************************
+# Functions
+# ************************************************************
 
 
 # Deprecated / not used anymore -> refer to monitoring tool
@@ -137,27 +148,6 @@ def perform_action():
         'status': 'success' if is_auth else 'error',
         'message': message,
     }
-
-# ************************************************************
-# Configuration variables
-# ************************************************************
-
-
-# YOU SHOULD PROBABLY NOT EDIT THIS PART
-SERVICES = load_services_config()
-SESSIONS = []
-SYSTEMCTL_PATH = "/bin/systemctl"
-SUDO_PATH = "/bin/sudo"
-DEBUG = False
-
-# YOU SHOULD PROBABLY EDIT THIS PART
-MONITORING_URL = ''
-DISABLE_SYSTEM_INFO = True
-# Generate your key with Fernet.generate_key() and copy/paste it.
-KEY = b''
-# Generate your token with Fernet(YOUR_KEY).encrypt('YOUR_PASSWORD'.encode()) and copy/paste it.
-# This will be the application password.
-TOKEN_APP = b''
 
 
 if __name__ == '__main__':

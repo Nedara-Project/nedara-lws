@@ -9,7 +9,7 @@
 - Start, stop, and check the status of Linux services
 - Simple password-based authentication (encrypted with Fernet)
 - Lightweight and easy to deploy with Flask + Gunicorn (optional but recommended)
-- Easily extensible with a `config.json` to define your services
+- Easily extensible with a `config.json` to define your services (use `config.json.example` template)
 
 ---
 
@@ -54,23 +54,50 @@ Define the list of services you want to manage:
 
 ### 3. Set up your Encryption Key & Token
 
-In the Python file (`app.py`), set:
+Your configuration is now stored in `config.json`.
 
-```python
-KEY = b'your_generated_fernet_key'
-TOKEN_APP = b'your_encrypted_password_token'
+Add the following fields:
+
+```json
+{
+  "fernet_key": "your_generated_fernet_key",
+  "token_app": "your_encrypted_password_token"
+}
 ```
 
-You can generate them with:
+#### 🔐 Generate the Fernet key and encrypted token in Python:
 
 ```python
 from cryptography.fernet import Fernet
-key = Fernet.generate_key()
-print("KEY =", key)
 
-token = Fernet(key).encrypt('YOUR_PASSWORD'.encode())
-print("TOKEN_APP =", token)
+# Generate a new Fernet key (keep it safe!)
+key = Fernet.generate_key()
+print("fernet_key =", key.decode())  # Copy this value to "fernet_key" in config.json
+
+# Encrypt your application password
+fernet = Fernet(key)
+token = fernet.encrypt(b'YOUR_PASSWORD')
+print("token_app =", token.decode())  # Copy this value to "token_app" in config.json
 ```
+
+#### 📝 Example `config.json` result:
+
+```json
+{
+  "secret_key": "your_secret_key_here",
+  "monitoring_url": "http://localhost:5000/monitoring",
+  "disable_system_info": true,
+  "fernet_key": "YHgy3YkxuXQbaN9bWZ_VBz8ARgN-KgMTt70qBkO9xoI=...example",
+  "token_app": "gAAAAABkUrpK3kV...example",
+  "services": {
+    "nginx": "nginx.service",
+    "postgres": "postgresql.service"
+  }
+}
+```
+
+> 🛠️ Copy `config.example.json` to `config.json` and fill in your own keys and settings.
+> ✅ Make sure `fernet_key` and `token_app` are both strings, **base64-encoded**.
 
 ---
 

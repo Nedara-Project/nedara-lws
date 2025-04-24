@@ -1,0 +1,11 @@
+{
+    "secret_key": "YOUR_SECRET_KEY",
+    "monitoring_url": "http://localhost:5000/monitoring",
+    "disable_system_info": true,
+    "fernet_key": "YOUR_FERNET_KEY_BASE64",
+    "token_app": "YOUR_TOKEN_APP_BASE64",
+    "services": {
+        "nginx": "nginx.service",
+        "postgres": "postgresql.service"
+    }
+}
