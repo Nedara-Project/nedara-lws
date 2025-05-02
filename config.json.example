@@ -1,5 +1,6 @@
 {
     "secret_key": "YOUR_SECRET_KEY",
+    "debug": false,
     "monitoring_url": "http://localhost:5000/monitoring",
     "disable_system_info": true,
     "fernet_key": "YOUR_FERNET_KEY_BASE64",

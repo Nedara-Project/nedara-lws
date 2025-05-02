@@ -97,6 +97,7 @@ print("token_app =", token.decode())  # Copy this value to "token_app" in config
 ```
 
 > 🛠️ Copy `config.example.json` to `config.json` and fill in your own keys and settings.
+
 > ✅ Make sure `fernet_key` and `token_app` are both strings, **base64-encoded**.
 
 ---
