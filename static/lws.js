@@ -136,7 +136,7 @@ const lwsMain = Nedara.createWidget({
         }
     },
     toggleLoader: function () {
-        this.$selector.find("progress").toggle();
+        this.$selector.find("div.loader").toggle();
     },
     showBlocks: function () {
         this.$selector.find(".service_block").show();
