@@ -339,6 +339,27 @@
             66%  {background-position: 250% 0,-150% 0}
             100% {background-position: 250% 0, 250% 0}
         }
+
+        .system-info-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: Arial, sans-serif;
+            margin-top: 1em;
+        }
+
+        .system-info-table th, .system-info-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #ccc;
+            text-align: left;
+        }
+
+        .system-info-table th {
+            background-color: #f5f5f5;
+        }
+
+        .system-info-table tr:hover {
+            background-color: #f0f0f0;
+        }
     </style>
 </head>
 <body>
@@ -419,34 +440,17 @@
                     </h4>
                 </div>
 
-                {% if system_info %}
-                <div class="system-stats">
-                    <div class="system-info-title">
-                        <i class="fas fa-memory"></i>
-                        <span>VMemory Usage</span>
-                        <span>(Total: {{ system_info.total_virtual_memory_gb }} Gio)</span>
-                    </div>
-                    <progress value="{{ system_info.virtual_memory_usage_percentage }}" max="100">
-                        {{ system_info.virtual_memory_usage_percentage }}%
-                    </progress>
-
-                    <div class="system-info-title">
-                        <i class="fas fa-tachometer-alt"></i>
-                        <span>CPU Usage</span>
-                    </div>
-                    <progress value="{{ system_info.cpu_usage_percentage }}" max="100">
-                        {{ system_info.cpu_usage_percentage }}%
-                    </progress>
-
-                    <div class="system-info-title">
-                        <i class="fas fa-exchange-alt"></i>
-                        <span>Swap Memory Usage</span>
-                    </div>
-                    <progress value="{{ system_info.swap_memory_usage_percentage }}" max="100">
-                        {{ system_info.swap_memory_usage_percentage }}%
-                    </progress>
+                <div class="system-stats" style="display: none">
+                    <table id="system-info-table" class="system-info-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
                 </div>
-                {% endif %}
 
                 <button class="btn btn-outline" type="submit" name="action" value="system_info">
                     <i class="fas fa-sync"></i>

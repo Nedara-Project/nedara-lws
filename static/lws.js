@@ -9,6 +9,7 @@ const lwsMain = Nedara.createWidget({
         "change select[name='service']": "_onServiceSelectChange",
         "click a.toggle_theme_btn": "_onToggleThemeBtnClick",
         "click div.service_control > button": "_onServiceControlBtnClick",
+        "click button[value='system_info']": "_onSystemInfoBtnClick",
     },
 
     start: function () {
@@ -89,6 +90,46 @@ const lwsMain = Nedara.createWidget({
             },
         });
     },
+    _onSystemInfoBtnClick: function () {
+        let self = this;
+        this.toggleLoader();
+        $.ajax({
+            url: "/lws/get_system_info",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({}),
+            success: function (response) {
+                self.toggleLoader();
+                const info = response.system_info;
+                const tableBody = $("#system-info-table tbody");
+                tableBody.empty(); // Clear previous data
+                const dataRows = [
+                    ["Total Virtual Memory", `${info.total_virtual_memory_gb} Gio`],
+                    ["Virtual Memory Used", `${info.virtual_memory_usage_gb} Gio`],
+                    ["Virtual Memory Usage", `${info.virtual_memory_usage_percentage}%`],
+                    ["CPU Usage", `${info.cpu_usage_percentage}%`],
+                    ["Swap Memory Used", `${info.swap_memory_usage_gb} Gio`],
+                    ["Swap Memory Usage", `${info.swap_memory_usage_percentage}%`],
+                ];
+
+                dataRows.forEach(([label, value]) => {
+                    tableBody.append(`
+                        <tr>
+                            <td>${label}</td>
+                            <td>${value}</td>
+                        </tr>
+                    `);
+                });
+
+                $(".system-stats").show();
+            },
+            error: function (xhr, status, error) {
+                console.error("Error:", error);
+                self.toggleLoader();
+            },
+        });
+    },
+
 
     // ************************************************************
     // * Functions

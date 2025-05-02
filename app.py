@@ -20,6 +20,7 @@ def load_full_config(config_file="config.json"):
         print(f"Error: The file '{config_file}' is not a valid JSON.")
         return {}
 
+
 CONFIG = load_full_config()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = CONFIG.get("secret_key", "")
@@ -42,7 +43,7 @@ TOKEN_APP = CONFIG.get("token_app", "").encode()
 
 
 # Deprecated / not used anymore -> refer to monitoring tool
-def get_system_info():
+def _get_system_info():
     gio = 1073741824
     return {
         'cpu_usage_percentage': psutil.cpu_percent(4),
@@ -99,7 +100,6 @@ def is_authenticated(session_id):
 def index():
     return render_template(
         'index.html',
-        system_info={},
         services=SERVICES,
         monitoring_url=MONITORING_URL,
         disable_system_info=DISABLE_SYSTEM_INFO,
@@ -120,6 +120,13 @@ def check_auth():
     session_id = data.get('session_id')
     return {
         'is_authenticated': is_authenticated(session_id),
+    }
+
+
+@app.route('/lws/get_system_info', methods=['POST'])
+def get_system_info():
+    return {
+        'system_info': _get_system_info()
     }
 
 
