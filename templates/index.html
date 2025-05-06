@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="auto">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,10 +18,14 @@
                 <h4 class="subtitle">Linux Web Service Manager</h4>
             </div>
             <div class="nav-actions">
-                <a href="#" class="nav-link toggle_theme_btn">
-                    <i class="fas fa-moon"></i>
-                    <span>Toggle theme</span>
-                </a>
+                <div class="theme-selector">
+                    <i class="fas fa-adjust theme-icon"></i>
+                    <select class="theme-select">
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                        <option value="auto">Auto (System)</option>
+                    </select>
+                </div>
                 {% if monitoring_url %}
                 <a href="{{ monitoring_url }}" target="new" class="nav-link">
                     <i class="fas fa-chart-line"></i>

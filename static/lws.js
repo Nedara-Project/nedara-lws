@@ -7,13 +7,13 @@ const lwsMain = Nedara.createWidget({
     events: {
         "click button.submit_password": "_onPasswordSubmit",
         "change select[name='service']": "_onServiceSelectChange",
-        "click a.toggle_theme_btn": "_onToggleThemeBtnClick",
+        "change select.theme-select": "_onThemeSelectChange",
         "click div.service_control > button": "_onServiceControlBtnClick",
         "click button[value='system_info']": "_onSystemInfoBtnClick",
     },
 
     start: function () {
-        this.setTheme();
+        this.initTheme();
         this.handleSession();
         this.handleLastSelect();
     },
@@ -56,12 +56,9 @@ const lwsMain = Nedara.createWidget({
         let selectedService = $(ev.currentTarget).find(":selected").val();
         localStorage.setItem("selectedService", selectedService);
     },
-    _onToggleThemeBtnClick: function () {
-        let $html = this.$container.find("html");
-        let themeAttr = $html.attr("data-theme");
-        let theme = themeAttr === 'light' ? 'dark' : 'light';
-        $html.attr("data-theme", theme);
-        localStorage.setItem("theme", theme);
+    _onThemeSelectChange: function (ev) {
+        let selectedTheme = $(ev.currentTarget).val();
+        this.setTheme(selectedTheme);
     },
     _onServiceControlBtnClick: function (ev) {
         let self = this;
@@ -73,7 +70,7 @@ const lwsMain = Nedara.createWidget({
             data: JSON.stringify({
                 session_id: localStorage.getItem("session_id"),
                 action: $(ev.originalEvent.target).val(),
-                service: self.$selector.find("select > option:selected").val(),
+                service: self.$selector.find("select[name='service'] > option:selected").val(),
             }),
             success: function (response) {
                 if (response.status === "success") {
@@ -169,11 +166,27 @@ const lwsMain = Nedara.createWidget({
                 ),
             )
             .prop("selected", true);
+        let savedTheme = localStorage.getItem("theme") || "auto";
+        this.$selector.find(".theme-select").val(savedTheme);
     },
-    setTheme: function () {
+    initTheme: function () {
         let theme = localStorage.getItem("theme");
-        if (theme) {
-            this.$container.find("html").attr("data-theme", theme);
+        if (!theme) {
+            theme = "auto";
+            localStorage.setItem("theme", theme);
+        }
+        this.setTheme(theme);
+    },
+    setTheme: function (theme) {
+        localStorage.setItem("theme", theme);
+        this.$container.find("html").attr("data-theme", theme);
+        const $icon = this.$selector.find(".theme-icon");
+        if (theme === "light") {
+            $icon.removeClass("fa-moon fa-adjust").addClass("fa-sun");
+        } else if (theme === "dark") {
+            $icon.removeClass("fa-sun fa-adjust").addClass("fa-moon");
+        } else { // auto
+            $icon.removeClass("fa-sun fa-moon").addClass("fa-adjust");
         }
     },
     toggleLoader: function () {
