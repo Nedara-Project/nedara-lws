@@ -5,6 +5,7 @@ import psutil
 import string
 import random
 import json
+import os
 from flask import Flask, render_template, request
 from cryptography.fernet import Fernet
 
@@ -26,6 +27,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = CONFIG.get("secret_key", "")
 
 SERVICES = CONFIG.get("services", {})
+SERVICE_FILES = CONFIG.get("service_files", {})
 SESSIONS = []
 SYSTEMCTL_PATH = "/bin/systemctl"
 SUDO_PATH = "/bin/sudo"
@@ -36,13 +38,11 @@ DISABLE_SYSTEM_INFO = CONFIG.get("disable_system_info", True)
 KEY = CONFIG.get("fernet_key", "").encode()
 TOKEN_APP = CONFIG.get("token_app", "").encode()
 
-
-# ************************************************************
+# **********************************************************
 # Functions
-# ************************************************************
+# **********************************************************
 
 
-# Deprecated / not used anymore -> refer to monitoring tool
 def _get_system_info():
     gio = 1073741824
     return {
@@ -91,9 +91,59 @@ def session_generator(size=36, chars=string.ascii_uppercase + string.digits):
 def is_authenticated(session_id):
     return session_id in SESSIONS
 
-# ************************************************************
+
+def get_file_path(service):
+    """Get the configuration file path for a service."""
+    return SERVICE_FILES.get(service)
+
+
+def read_file(file_path):
+    """Read the content of a file."""
+    try:
+        if not os.path.exists(file_path):
+            return None, f"File not found: {file_path}"
+        with open(file_path, 'r') as file:
+            content = file.read()
+        return content, None
+    except Exception as e:
+        return None, str(e)
+
+
+def write_file(file_path, content):
+    """Write content to a file."""
+    try:
+        # Create directory if it doesn't exist
+        directory = os.path.dirname(file_path)
+        if directory and not os.path.exists(directory):
+            os.makedirs(directory)
+        # Check if we need to use sudo to write the file
+        if os.access(file_path, os.W_OK) or not os.path.exists(file_path):
+            # We have write access or the file doesn't exist yet
+            with open(file_path, 'w') as file:
+                file.write(content)
+        else:
+            # We need sudo to write to this file
+            try:
+                # Create a temporary file
+                temp_file = f"/tmp/lws_temp_{random.randint(1000, 9999)}"
+                with open(temp_file, 'w') as file:
+                    file.write(content)
+                # Use sudo to copy the file to the destination
+                copy_command = [SUDO_PATH, "-n", "cp", temp_file, file_path]
+                subprocess.run(copy_command, check=True)
+                # Remove the temporary file
+                os.remove(temp_file)
+            except subprocess.CalledProcessError as e:
+                return False, f"Failed to write file with sudo: {str(e)}"
+            except Exception as e:
+                return False, f"Error using sudo to write file: {str(e)}"
+        return True, None
+    except Exception as e:
+        return False, str(e)
+
+# **********************************************************
 # Controllers
-# ************************************************************
+# **********************************************************
 
 
 @app.route('/')
@@ -145,7 +195,6 @@ def perform_action():
             subprocess.run(start_service_command)
             message = f'{selected_service} service has started successfully'
         elif action == "stop":
-            # stop_service_command = [SUDO_PATH, "-n", SYSTEMCTL_PATH, "stop", service_name]
             stop_service_command = [SUDO_PATH, "-n", SYSTEMCTL_PATH, "stop", service_name]
             subprocess.run(stop_service_command)
             message = f'{selected_service} service has been stopped successfully'
@@ -154,6 +203,71 @@ def perform_action():
     return {
         'status': 'success' if is_auth else 'error',
         'message': message,
+    }
+
+
+@app.route('/lws/get_file_content', methods=['POST'])
+def get_file_content():
+    """Get the content of a service configuration file."""
+    data = request.get_json()
+    session_id = data.get('session_id')
+    service = data.get('service')
+    if not is_authenticated(session_id):
+        return {
+            'status': 'error',
+            'error': 'Authentication required'
+        }
+    if not service or service not in SERVICE_FILES:
+        return {
+            'status': 'error',
+            'error': f'No configuration file defined for service: {service}'
+        }
+    file_path = SERVICE_FILES.get(service)
+    content, error = read_file(file_path)
+    if error:
+        return {
+            'status': 'error',
+            'error': error
+        }
+    return {
+        'status': 'success',
+        'content': content,
+        'file_path': file_path
+    }
+
+
+@app.route('/lws/save_file_content', methods=['POST'])
+def save_file_content():
+    """Save the content of a service configuration file."""
+    data = request.get_json()
+    session_id = data.get('session_id')
+    service = data.get('service')
+    content = data.get('content')
+    if not is_authenticated(session_id):
+        return {
+            'status': 'error',
+            'error': 'Authentication required'
+        }
+    if not service or service not in SERVICE_FILES:
+        return {
+            'status': 'error',
+            'error': f'No configuration file defined for service: {service}'
+        }
+    if content is None:
+        return {
+            'status': 'error',
+            'error': 'No content provided'
+        }
+    file_path = SERVICE_FILES.get(service)
+    success, error = write_file(file_path, content)
+    if not success:
+        return {
+            'status': 'error',
+            'error': error
+        }
+    return {
+        'status': 'success',
+        'message': f'File saved successfully: {file_path}'
     }
 
 

@@ -8,5 +8,9 @@
     "services": {
         "nginx": "nginx.service",
         "postgres": "postgresql.service"
+    },
+    "service_files": {
+        "nginx": "",
+        "postgres": "/path/to/your/file"
     }
 }

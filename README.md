@@ -10,6 +10,7 @@
 - Simple password-based authentication (encrypted with Fernet)
 - Lightweight and easy to deploy with Flask + Gunicorn (optional but recommended)
 - Easily extensible with a `config.json` to define your services (use `config.json.example` template)
+- Edit files directly from the Monaco Editor (for your configuration files, etc.)
 
 ---
 
@@ -39,13 +40,17 @@ pip install flask gunicorn cryptography psutil
 
 ### 2. Create `config.json`
 
-Define the list of services you want to manage:
+Define the list of services you want to manage (and potentially any config files):
 
 ```json
 {
   "services": {
     "My App": "myapp.service",
     "Database": "postgresql.service"
+  },
+  "service_files": {
+    "nginx": "",
+    "postgres": "/path/to/your/file"
   }
 }
 ```
@@ -85,6 +90,7 @@ print("token_app =", token.decode())  # Copy this value to "token_app" in config
 ```json
 {
   "secret_key": "your_secret_key_here",
+  "debug": false,
   "monitoring_url": "http://localhost:5000/monitoring",
   "disable_system_info": true,
   "fernet_key": "YHgy3YkxuXQbaN9bWZ_VBz8ARgN-KgMTt70qBkO9xoI=...example",
@@ -92,6 +98,10 @@ print("token_app =", token.decode())  # Copy this value to "token_app" in config
   "services": {
     "nginx": "nginx.service",
     "postgres": "postgresql.service"
+  },
+  "service_files": {
+    "nginx": "/path/to/your/file",
+    "postgres": "/path/to/your/file"
   }
 }
 ```
@@ -132,7 +142,7 @@ Description=Linux Web Service Manager (gunicorn)
 After=network.target
 
 [Service]
-User=flasksudo
+User=nedarasudo
 WorkingDirectory=/home/your_user/nedara-lws/
 Environment="PATH=/home/your_user/.virtualenvs/yourenv/bin"
 ExecStart=/home/your_user/.virtualenvs/yourenv/bin/gunicorn -b 0.0.0.0:8000 -w 1 app:app
