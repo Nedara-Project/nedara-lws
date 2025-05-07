@@ -40,7 +40,7 @@ pip install flask gunicorn cryptography psutil
 
 ### 2. Create `config.json`
 
-Define the list of services you want to manage (and potentially any config files):
+Define the list of services you want to manage (and potentially any config files — mandatory for each service):
 
 ```json
 {
@@ -49,8 +49,8 @@ Define the list of services you want to manage (and potentially any config files
     "Database": "postgresql.service"
   },
   "service_files": {
-    "nginx": "",
-    "postgres": "/path/to/your/file"
+    "My App": "",
+    "Database": "/path/to/your/file"
   }
 }
 ```
