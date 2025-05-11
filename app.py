@@ -198,6 +198,10 @@ def perform_action():
             stop_service_command = [SUDO_PATH, "-n", SYSTEMCTL_PATH, "stop", service_name]
             subprocess.run(stop_service_command)
             message = f'{selected_service} service has been stopped successfully'
+        elif action == "restart":
+            restart_service_command = [SUDO_PATH, "-n", SYSTEMCTL_PATH, "restart", service_name]
+            subprocess.run(restart_service_command)
+            message = f'{selected_service} service has been restarted successfully'
         elif action == "status":
             message = get_service_status(service_name)
     return {
@@ -232,7 +236,7 @@ def get_file_content():
     return {
         'status': 'success',
         'content': content,
-        'file_path': file_path
+        'file_path': os.path.join("..", os.path.basename(file_path))
     }
 
 
