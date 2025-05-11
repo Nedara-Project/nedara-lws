@@ -31,9 +31,12 @@
                 {% if monitoring_url %}
                 <a href="{{ monitoring_url }}" target="new" class="nav-link">
                     <i class="fas fa-chart-line"></i>
-                    <span>Open Monitoring Tool</span>
+                    <span>Monitoring</span>
                 </a>
                 {% endif %}
+                <div class="alert alert-success success_auth" style="display: none">
+                    <i class="fas fa-check-circle"></i>
+                </div>
             </div>
         </nav>
 
@@ -41,7 +44,7 @@
             <div class="loader" style="display: none"></div>
 
             <!-- Authentication Card -->
-            <div class="card">
+            <div class="card login_block">
                 <div class="card-header">
                     <h4 class="card-title">
                         <i class="fas fa-lock"></i>
@@ -56,10 +59,6 @@
                         <i class="fas fa-sign-in-alt"></i>
                         Login
                     </button>
-                </div>
-                <div class="alert alert-success success_auth" style="display: none">
-                    <i class="fas fa-check-circle"></i>
-                    <strong>You are authentified :-)</strong>
                 </div>
                 <div class="alert alert-danger error_auth" style="display: none; margin-top: 1rem;">
                     <i class="fas fa-exclamation-circle"></i>
@@ -81,6 +80,18 @@
                         <option value="{{ service_key }}">{{ service_key }}</option>
                         {% endfor %}
                     </select>
+                </div>
+                <div>
+                    <div class="no-file-message" style="display: none;">
+                        <p><i class="fas fa-info-circle"></i> No configuration file available for the selected service.</p>
+                    </div>
+                    <div class="file-available" style="display: none;">
+                        <button class="btn btn-link">
+                            <i class="fas fa-file-code"></i>
+                            <span class="file-path"></span>
+                            <i class="fas fa-external-link-alt"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -149,18 +160,15 @@
                     <pre class="service_status" style="padding: 10px"></pre>
                 </div>
             </div>
+        </main>
 
-            <!-- File Editor Card -->
-            <div class="card file_editor_block" style="display: none">
-                <div class="card-header">
-                    <h4 class="card-title">
-                        <i class="fas fa-edit"></i>
-                        Configuration File Editor
-                    </h4>
-                    <span class="file-path"></span>
+        <div class="fullscreen-editor" style="display: none;">
+            <div class="editor-header">
+                <div class="editor-title">
+                    <i class="fas fa-file-code"></i>
+                    <span class="editor-file-path"></span>
                 </div>
-                <div id="monaco-editor-container" style="height: 400px; width: 100%;"></div>
-                <div class="editor-actions" style="margin-top: 10px;">
+                <div class="editor-actions">
                     <button class="btn btn-primary save-file">
                         <i class="fas fa-save"></i>
                         Save
@@ -169,17 +177,24 @@
                         <i class="fas fa-sync"></i>
                         Reload
                     </button>
+                    <button class="btn btn-outline close-editor">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
                 </div>
-                <div class="alert alert-success save-success" style="display: none; margin-top: 10px;">
-                    <i class="fas fa-check-circle"></i>
-                    <strong>File saved successfully!</strong>
-                </div>
-                <div class="alert alert-danger save-error" style="display: none; margin-top: 10px;">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <strong>Error saving file!</strong> <span class="error-message"></span>
+                <div class="editor-status">
+                    <div class="alert alert-success save-success" style="display: none;">
+                        <i class="fas fa-check-circle"></i>
+                        <strong>File saved successfully!</strong>
+                    </div>
+                    <div class="alert alert-danger save-error" style="display: none;">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <strong>Error saving file!</strong> <span class="error-message"></span>
+                    </div>
                 </div>
             </div>
-        </main>
+            <div id="monaco-editor-container"></div>
+        </div>
     </div>
     <script>var require = { paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.37.1/min/vs' } };</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.37.1/min/vs/loader.min.js"></script>

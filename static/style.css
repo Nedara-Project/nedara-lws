@@ -173,6 +173,22 @@ body {
     color: var(--primary);
 }
 
+.btn-link {
+    color: var(--primary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: inherit;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-link:hover {
+    text-decoration: none;
+}
+
 .card {
     background-color: var(--card-bg);
     border-radius: var(--border-radius);
@@ -244,17 +260,14 @@ select.form-control {
 }
 
 .alert {
-    padding: 15px;
+    padding: 5px;
     border-radius: var(--border-radius);
-    display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 20px;
 }
 
 .alert-success {
     background-color: rgba(46, 204, 113, 0.1);
-    border: 1px solid var(--success);
     color: var(--success);
 }
 
@@ -411,4 +424,45 @@ select.form-control {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+}
+
+.fullscreen-editor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color);
+    display: flex;
+    flex-direction: column;
+}
+
+.editor-header {
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: var(--bg-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.editor-title {
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 1rem;
+}
+
+.editor-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+#monaco-editor-container {
+    flex-grow: 1;
+    width: 100%;
+}
+
+.editor-status {
+    padding: 0.5rem 1rem;
 }

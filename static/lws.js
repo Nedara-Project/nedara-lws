@@ -12,13 +12,15 @@ const lwsMain = Nedara.createWidget({
         "click button[value='system_info']": "_onSystemInfoBtnClick",
         "click button.save-file": "_onSaveFileBtnClick",
         "click button.reload-file": "_onReloadFileBtnClick",
+        "click button.open-editor": "_onOpenEditorClick",
+        "click button.close-editor": "_onCloseEditorClick",
     },
 
     start: function () {
         this.initTheme();
         this.handleSession();
         this.handleLastSelect();
-        this.initMonacoEditor();
+        this.loadFile();
     },
 
     // ************************************************************
@@ -47,6 +49,7 @@ const lwsMain = Nedara.createWidget({
                     $error.show();
                     $success.hide();
                 }
+                self.loadFile();
                 self.toggleLoader();
             },
             error: function (xhr, status, error) {
@@ -175,6 +178,22 @@ const lwsMain = Nedara.createWidget({
         let selectedService = this.$selector.find("select[name='service'] > option:selected").val();
         this.loadFileContent(selectedService);
     },
+    _onOpenEditorClick: function () {
+        document.body.style.overflow = 'hidden';
+        this.$selector.find('.fullscreen-editor').show();
+        this.$selector.find('.navbar').hide();
+        this.$selector.find('main').hide();
+        this.$selector.find('.editor-file-path').text(this.$selector.find('.file-path').text());
+        if (this.editor) {
+            this.editor.layout();
+        }
+    },
+    _onCloseEditorClick: function () {
+        document.body.style.overflow = '';
+        this.$selector.find('.fullscreen-editor').hide();
+        this.$selector.find('.navbar').show();
+        this.$selector.find('main').show();
+    },
 
     // ************************************************************
     // * Functions
@@ -217,10 +236,6 @@ const lwsMain = Nedara.createWidget({
             .prop("selected", true);
         let savedTheme = localStorage.getItem("theme") || "auto";
         this.$selector.find(".theme-select").val(savedTheme);
-        // Load file content for the initial service
-        if (selectedService) {
-            this.loadFileContent(selectedService);
-        }
     },
     initTheme: function () {
         let theme = localStorage.getItem("theme");
@@ -249,25 +264,26 @@ const lwsMain = Nedara.createWidget({
         this.$selector.find(".service_block").show();
         this.$selector.find(".system_block").show();
         this.$selector.find(".control_block").show();
+        this.$selector.find(".login_block").hide();
     },
-    initMonacoEditor: function () {
+    initMonacoEditor: function (initialContent = "", filePath = "") {
         let self = this;
         // Make sure Monaco is loaded
         if (typeof monaco === 'undefined') {
             // Use require.config to load Monaco
             require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.37.1/min/vs' }});
             require(['vs/editor/editor.main'], function () {
-                self.createEditor();
+                self.createEditor(initialContent, filePath);
             });
         } else {
-            this.createEditor();
+            this.createEditor(initialContent, filePath);
         }
     },
-    createEditor: function () {
+    createEditor: function (initialContent = "", filePath = "") {
         // Create the Monaco editor instance
         this.editor = monaco.editor.create(document.getElementById('monaco-editor-container'), {
-            value: "",
-            language: "plaintext",
+            value: initialContent,
+            language: this.getLanguageFromFilePath(filePath),
             theme: this.getMonacoTheme(),
             automaticLayout: true,
             scrollBeyondLastLine: false,
@@ -278,11 +294,7 @@ const lwsMain = Nedara.createWidget({
             lineDecorationsWidth: 10,
             lineNumbersMinChars: 3,
         });
-        // Load the file for the initially selected service
-        let initialService = this.$selector.find("select[name='service'] > option:selected").val();
-        if (initialService) {
-            this.loadFileContent(initialService);
-        }
+        window.addEventListener('resize', this.editor.layout.bind(this.editor));
     },
     getMonacoTheme: function () {
         let theme = localStorage.getItem("theme") || "auto";
@@ -301,9 +313,9 @@ const lwsMain = Nedara.createWidget({
     },
     loadFileContent: function (serviceKey) {
         let self = this;
-        if (!serviceKey || !this.editor) {
+        if (!serviceKey) {
             return;
-        };
+        }
         this.toggleLoader();
         $.ajax({
             url: "/lws/get_file_content",
@@ -316,36 +328,49 @@ const lwsMain = Nedara.createWidget({
             success: function (response) {
                 self.toggleLoader();
                 if (response.status === "success") {
-                    // Set the file content to the editor
-                    self.editor.setValue(response.content);
-                    // Set the language mode based on file extension
                     const filePath = response.file_path;
                     self.$selector.find(".file-path").text(filePath);
-                    self.setEditorLanguage(filePath);
-                    // Show the editor block
+                    self.$selector.find(".editor-file-path").text(filePath);
                     if (filePath) {
-                        self.$selector.find(".file_editor_block").show();
+                        self.$selector.find(".no-file-message").hide();
+                        self.$selector.find(".file-available").show();
+                        if (self.editor) {
+                            self.editor.setValue(response.content);
+                            self.setEditorLanguage(filePath);
+                        } else {
+                            self.initMonacoEditor(response.content, filePath);
+                        }
+                    } else {
+                        self.$selector.find(".no-file-message").show();
+                        self.$selector.find(".file-available").hide();
                     }
                 } else {
                     console.error("Error loading file:", response.error);
-                    self.$selector.find(".file_editor_block").hide();
+                    self.$selector.find(".no-file-message").show();
+                    self.$selector.find(".file-available").hide();
                 }
             },
             error: function (xhr, status, error) {
                 console.error("Error loading file:", error);
                 self.toggleLoader();
-                self.$selector.find(".file_editor_block").hide();
+                self.$selector.find(".no-file-message").show();
+                self.$selector.find(".file-available").hide();
             },
         });
     },
     setEditorLanguage: function (filePath) {
-        if (!filePath) {
+        if (!filePath || !this.editor) {
             return;
-        };
-        // Determine language based on file extension
+        }
+        const language = this.getLanguageFromFilePath(filePath);
+        const model = this.editor.getModel();
+        monaco.editor.setModelLanguage(model, language);
+    },
+    getLanguageFromFilePath: function (filePath) {
+        if (!filePath) {
+            return "plaintext";
+        }
         const fileExtension = filePath.split('.').pop().toLowerCase();
-        let language = "plaintext";
-        // Map common file extensions to Monaco languages
         const extensionMap = {
             "js": "javascript",
             "py": "python",
@@ -370,12 +395,18 @@ const lwsMain = Nedara.createWidget({
             "yml": "yaml",
         };
         if (extensionMap[fileExtension]) {
-            language = extensionMap[fileExtension];
+            return extensionMap[fileExtension];
         } else if (filePath.includes("nginx")) {
-            language = "nginx";
+            return "nginx";
         }
-        const model = this.editor.getModel();
-        monaco.editor.setModelLanguage(model, language);
+        return "plaintext";
+    },
+    loadFile: function () {
+        // Load file content for the initial service
+        let selectedService = this.$selector.find("select[name='service'] > option:selected").val();
+        if (selectedService) {
+            this.loadFileContent(selectedService);
+        }
     },
 });
 
