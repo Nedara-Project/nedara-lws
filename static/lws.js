@@ -326,6 +326,7 @@ const lwsMain = Nedara.createWidget({
                 service: serviceKey,
             }),
             success: function (response) {
+                self.resetEditorPosition();
                 self.toggleLoader();
                 if (response.status === "success") {
                     const filePath = response.file_path;
@@ -406,6 +407,13 @@ const lwsMain = Nedara.createWidget({
         let selectedService = this.$selector.find("select[name='service'] > option:selected").val();
         if (selectedService) {
             this.loadFileContent(selectedService);
+        }
+    },
+    resetEditorPosition: function () {
+        if (this.editor) {
+            this.editor.setPosition({ lineNumber: 1, column: 1 });
+            this.editor.revealPositionInCenter({ lineNumber: 1, column: 1 });
+            this.editor.setScrollPosition({ scrollTop: 0 });
         }
     },
 });
