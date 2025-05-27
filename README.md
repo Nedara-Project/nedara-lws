@@ -89,6 +89,7 @@ print("token_app =", token.decode())  # Copy this value to "token_app" in config
 
 ```json
 {
+  "port": 5000,
   "secret_key": "your_secret_key_here",
   "debug": false,
   "monitoring_url": "http://localhost:5000/monitoring",
@@ -236,6 +237,7 @@ This project is open-source under the [MIT License](LICENSE).
 **Made with ❤️ by the [Nedara Project](https://github.com/Nedara-Project)**
 ## Screenshots
 
-![Login Page](./demo/demo1.png)
-
-![Main Interface](./demo/demo2.png)
+![Screenshot1](./demo/demo1.png)
+![Screenshot2](./demo/demo2.png)
+![Screenshot3](./demo/demo3.png)
+![Screenshot4](./demo/demo4.png)

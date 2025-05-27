@@ -34,6 +34,7 @@ SUDO_PATH = "/bin/sudo"
 DEBUG = CONFIG.get("debug", False)
 MONITORING_URL = CONFIG.get("monitoring_url", "")
 DISABLE_SYSTEM_INFO = CONFIG.get("disable_system_info", True)
+PORT = CONFIG.get("port", 5000)
 
 KEY = CONFIG.get("fernet_key", "").encode()
 TOKEN_APP = CONFIG.get("token_app", "").encode()
@@ -276,4 +277,7 @@ def save_file_content():
 
 
 if __name__ == '__main__':
-    app.run(debug=DEBUG)
+    app.run(
+        port=PORT,
+        debug=DEBUG,
+    )
