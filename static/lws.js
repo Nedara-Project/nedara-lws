@@ -88,10 +88,14 @@ const lwsMain = Nedara.createWidget({
             }),
             success: function (response) {
                 if (response.status === "success") {
-                    self.$selector.find(".status_block").show();
+                    const $statusBlock = self.$selector.find(".status_block");
+                    $statusBlock.show();
                     self.$selector
                         .find(".service_status")
                         .text(response.message);
+                    $('html, body').animate({
+                        scrollTop: $statusBlock.offset().top - 20,
+                    }, 400, 'swing');
                 }
                 self.toggleLoader();
             },
