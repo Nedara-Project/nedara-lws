@@ -10,10 +10,9 @@
 - Real-time updates via WebSocket (Socket.IO)
 - AI-powered scheduler using phi3:mini model for intelligent service management
 - Simple password-based authentication (encrypted with Fernet)
-- Lightweight and easy to deploy with Flask + Gunicorn (optional but recommended)
+- Lightweight and easy to deploy with Flask
 - Easily extensible with a `config.json` to define your services (use `config.json.example` template)
 - Edit files directly from the Monaco Editor (for your configuration files, etc.)
-- SQLite database (`apt install sqlite3`)
 
 ---
 
@@ -22,11 +21,11 @@
 - Python 3.7+
 - Flask
 - Socket.IO for real-time communication
-- Gunicorn (for production deployment - optional but recommended)
 - `sudo` and `systemctl` installed on the server
 - A dedicated Linux user with passwordless sudo access
 - **Ollama** installed on the system
 - **phi3:mini** model for AI scheduling capabilities
+- SQLite database (`apt install sqlite3`)
 
 ---
 
@@ -56,8 +55,10 @@ You can use a virtual environment (optional but recommended):
 ```bash
 python3 -m venv venv  # alternatively use virtualenvwrapper
 source venv/bin/activate
-pip install flask gunicorn cryptography psutil ollama python-socketio gevent
+pip install flask cryptography psutil ollama python-socketio gevent
 ```
+
+Alternatively you can use `gunicorn` - do not forget to `pip install gunicorn` then.
 
 ---
 
@@ -156,7 +157,9 @@ Then, make sure the Flask app runs under this user.
 
 ---
 
-## 🚀 Run in Production with Gunicorn
+## 🚀 Run in Production
+
+For production environments, you can launch `app.py` directly via Python or use Gunicorn (or any WSGI).
 
 Create a systemd service unit (example):
 
@@ -168,8 +171,11 @@ After=network.target
 [Service]
 User=nedarasudo
 WorkingDirectory=/home/your_user/nedara-lws/
-Environment="PATH=/home/your_user/.virtualenvs/yourenv/bin"
-ExecStart=/home/your_user/.virtualenvs/yourenv/bin/gunicorn -k gevent -b 0.0.0.0:8000 -w 1 app:app
+Environment="PATH=/home/your_user/.virtualenvs/YOURENV/bin"
+ExecStart=/home/kea/.virtualenvs/YOURENV/bin/python3 app.py
+
+# Example for Gunicorn - not required
+#ExecStart=/home/your_user/.virtualenvs/YOURENV/bin/gunicorn -k gevent -b 0.0.0.0:8000 -w 1 app:app
 
 [Install]
 WantedBy=multi-user.target

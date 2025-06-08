@@ -499,7 +499,7 @@ const lwsMain = Nedara.createWidget({
             tbody.append(`
                 <tr>
                     <td colspan="3" class="text-center text-muted">
-                        No scheduled operations for this service
+                        No scheduled operations for this service.
                     </td>
                 </tr>
             `);

@@ -165,7 +165,7 @@ def get_formatted_datetime():
 
 def ask_phi3(prompt):
     response = ollama.generate(
-        model='phi3',
+        model='phi3:mini',
         prompt=prompt,
         options={
             'temperature': 0.3,
@@ -189,7 +189,8 @@ def schedule_checker_loop():
                 for service_name, schedule_text, operation in services:
                     response = ask_phi3(f"""
                         Respond STRICTLY with a single character:
-                        - "1" if the current time ({formatted_datetime}) matches "{schedule_text}".
+                        - "1" if the current time ({formatted_datetime}) matches "{schedule_text}"
+                        with the same hour and minute.
                         - "0" otherwise.
                         DO NOT write ANYTHING else—no symbols, no punctuation, no disclaimers.
                     """)
@@ -219,6 +220,7 @@ def index():
         services=SERVICES,
         monitoring_url=MONITORING_URL,
         disable_system_info=DISABLE_SYSTEM_INFO,
+        system_hour=get_formatted_datetime(),
     )
 
 
@@ -413,4 +415,4 @@ def handle_delete_schedule(data):
 if __name__ == '__main__':
     schedule_thread = threading.Thread(target=schedule_checker_loop, daemon=True)
     schedule_thread.start()
-    socketio.run(app, port=PORT, async_mode='gevent', debug=DEBUG)
+    socketio.run(app, port=PORT, debug=DEBUG, host='0.0.0.0')
