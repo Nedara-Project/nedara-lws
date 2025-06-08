@@ -55,7 +55,7 @@ You can use a virtual environment (optional but recommended):
 ```bash
 python3 -m venv venv  # alternatively use virtualenvwrapper
 source venv/bin/activate
-pip install flask cryptography psutil ollama python-socketio gevent
+pip install flask cryptography psutil ollama python-socketio gevent gevent-websocket
 ```
 
 Alternatively you can use `gunicorn` - do not forget to `pip install gunicorn` then.
