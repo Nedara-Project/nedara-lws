@@ -56,7 +56,7 @@ You can use a virtual environment (optional but recommended):
 ```bash
 python3 -m venv venv  # alternatively use virtualenvwrapper
 source venv/bin/activate
-pip install flask gunicorn cryptography psutil ollama python-socketio
+pip install flask gunicorn cryptography psutil ollama python-socketio gevent
 ```
 
 ---
@@ -169,7 +169,7 @@ After=network.target
 User=nedarasudo
 WorkingDirectory=/home/your_user/nedara-lws/
 Environment="PATH=/home/your_user/.virtualenvs/yourenv/bin"
-ExecStart=/home/your_user/.virtualenvs/yourenv/bin/gunicorn -b 0.0.0.0:8000 -w 1 app:app
+ExecStart=/home/your_user/.virtualenvs/yourenv/bin/gunicorn -k gevent -b 0.0.0.0:8000 -w 1 app:app
 
 [Install]
 WantedBy=multi-user.target

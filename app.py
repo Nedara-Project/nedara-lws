@@ -413,4 +413,4 @@ def handle_delete_schedule(data):
 if __name__ == '__main__':
     schedule_thread = threading.Thread(target=schedule_checker_loop, daemon=True)
     schedule_thread.start()
-    socketio.run(app, port=PORT, debug=DEBUG)
+    socketio.run(app, port=PORT, async_mode='gevent', debug=DEBUG)
