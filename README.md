@@ -6,11 +6,14 @@
 
 ## 🚀 Features
 
-- Start, stop, and check the status of Linux services
+- Start, stop, restart and check the status of Linux services
+- Real-time updates via WebSocket (Socket.IO)
+- AI-powered scheduler using phi3:mini model for intelligent service management
 - Simple password-based authentication (encrypted with Fernet)
 - Lightweight and easy to deploy with Flask + Gunicorn (optional but recommended)
 - Easily extensible with a `config.json` to define your services (use `config.json.example` template)
 - Edit files directly from the Monaco Editor (for your configuration files, etc.)
+- SQLite database (`apt install sqlite3`)
 
 ---
 
@@ -18,27 +21,47 @@
 
 - Python 3.7+
 - Flask
+- Socket.IO for real-time communication
 - Gunicorn (for production deployment - optional but recommended)
 - `sudo` and `systemctl` installed on the server
 - A dedicated Linux user with passwordless sudo access
+- **Ollama** installed on the system
+- **phi3:mini** model for AI scheduling capabilities
 
 ---
 
 ## 🔧 Configuration
 
-### 1. Install Dependencies
+### 1. Install Ollama and phi3:mini
+
+First, install Ollama on your system:
+
+```bash
+# Visit https://ollama.com for detailed installation instructions
+curl -fsSL https://ollama.com/install.sh | sh
+```
+
+Then install the phi3:mini model:
+
+```bash
+ollama run phi3:mini
+```
+
+> 📖 For more information about the phi3:mini model, visit: https://ollama.com/library/phi3:mini
+
+### 2. Install Dependencies
 
 You can use a virtual environment (optional but recommended):
 
 ```bash
 python3 -m venv venv  # alternatively use virtualenvwrapper
 source venv/bin/activate
-pip install flask gunicorn cryptography psutil
+pip install flask gunicorn cryptography psutil ollama python-socketio
 ```
 
 ---
 
-### 2. Create `config.json`
+### 3. Create `config.json`
 
 Define the list of services you want to manage (and potentially any config files — mandatory for each service):
 
@@ -57,7 +80,7 @@ Define the list of services you want to manage (and potentially any config files
 
 ---
 
-### 3. Set up your Encryption Key & Token
+### 4. Set up your Encryption Key & Token
 
 Your configuration is now stored in `config.json`.
 
@@ -113,7 +136,7 @@ print("token_app =", token.decode())  # Copy this value to "token_app" in config
 
 ---
 
-### 4. Create a Dedicated User (`nedarasudo`)
+### 5. Create a Dedicated User (`nedarasudo`)
 
 To ensure safe and isolated execution of commands:
 
@@ -174,6 +197,11 @@ server {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
+
+        # WebSocket support for Socket.IO
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
     }
 }
 ```
@@ -186,9 +214,32 @@ sudo systemctl reload nginx
 
 ---
 
+## 🤖 AI Scheduler
+
+Nedara LWS includes an intelligent scheduler powered by the **phi3:mini** AI model. This feature provides:
+
+- Intelligent service management recommendations
+- Automated scheduling suggestions based on system load and usage patterns
+- Smart monitoring alerts and maintenance scheduling
+
+The AI scheduler uses the phi3:mini model running through Ollama to analyze system metrics and provide intelligent insights for service management.
+
+---
+
 ## 🔐 Authentication
 
 Authentication is handled via encrypted tokens using the Fernet symmetric encryption system. A session ID is returned upon successful login, and must be included in future requests.
+
+---
+
+## 🌐 Real-time Communication
+
+The application uses Socket.IO for real-time communication between the server and clients, providing:
+
+- Live service status updates
+- Real-time system monitoring
+- Instant notifications for service state changes
+- Interactive AI scheduler feedback
 
 ---
 
@@ -231,10 +282,12 @@ This project is open-source under the [MIT License](LICENSE).
 - Use HTTPS in production (with Nginx + Let's Encrypt)
 - Restrict access by IP or VPN
 - Consider integrating LDAP or OAuth in future releases
+- Monitor AI model performance and adjust scheduling parameters as needed
 
 ---
 
 **Made with ❤️ by the [Nedara Project](https://github.com/Nedara-Project)**
+
 ## Screenshots
 
 ![Screenshot1](./demo/demo1.png)

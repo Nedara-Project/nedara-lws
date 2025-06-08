@@ -6,8 +6,15 @@ import string
 import random
 import json
 import os
+import ollama
+import threading
+import time
+
 from flask import Flask, render_template, request
 from cryptography.fernet import Fernet
+from datetime import datetime
+from flask_socketio import SocketIO, emit
+from database import init_db, get_service_schedules, save_service_schedule, delete_service_schedule, get_db_connection
 
 
 def load_full_config(config_file="config.json"):
@@ -23,8 +30,10 @@ def load_full_config(config_file="config.json"):
 
 
 CONFIG = load_full_config()
+init_db()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = CONFIG.get("secret_key", "")
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 SERVICES = CONFIG.get("services", {})
 SERVICE_FILES = CONFIG.get("service_files", {})
@@ -141,6 +150,62 @@ def write_file(file_path, content):
         return True, None
     except Exception as e:
         return False, str(e)
+
+
+def get_formatted_datetime():
+    now = datetime.now()
+    day = now.day
+    month = now.strftime("%B")
+    year = now.year
+    hours_24 = now.hour
+    hours_12 = now.strftime("%I")
+    minutes = now.strftime("%M")
+    return f"{day} {month} {year} {hours_24}:{minutes} ({hours_12}:{minutes})"
+
+
+def ask_phi3(prompt):
+    response = ollama.generate(
+        model='phi3',
+        prompt=prompt,
+        options={
+            'temperature': 0.3,
+            'num_ctx': 1024,
+            'num_threads': 2,
+            'num_predict': 10,
+        }
+    )
+    return response['response']
+
+
+def schedule_checker_loop():
+    while True:
+        try:
+            with get_db_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT service_name, schedule_text, operation FROM service_schedules")
+                services = cursor.fetchall()
+                formatted_datetime = get_formatted_datetime()
+
+                for service_name, schedule_text, operation in services:
+                    response = ask_phi3(f"""
+                        Respond STRICTLY with a single character:
+                        - "1" if the current time ({formatted_datetime}) matches "{schedule_text}".
+                        - "0" otherwise.
+                        DO NOT write ANYTHING else—no symbols, no punctuation, no disclaimers.
+                    """)
+
+                    if int(response.strip()[:1]):
+                        if not DEBUG:
+                            service_command = [SUDO_PATH, "-n", SYSTEMCTL_PATH, operation, SERVICES.get(service_name)]
+                            subprocess.run(service_command)
+                        print(f"Executed {operation} on {service_name} as scheduled")
+                        if DEBUG:
+                            print(f"DEBUG: {service_name} -> {operation} -> {schedule_text} | {formatted_datetime}")
+
+        except Exception as e:
+            print(f"Error in schedule checker: {str(e)}")
+
+        time.sleep(60)
 
 # **********************************************************
 # Controllers
@@ -276,8 +341,76 @@ def save_file_content():
     }
 
 
+# **********************************************************
+# SocketIO
+# **********************************************************
+
+@socketio.on('connect')
+def handle_connect():
+    print('Client connected')
+
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print('Client disconnected')
+
+
+@socketio.on('get_schedules')
+def handle_get_schedules(data):
+    service_name = data.get('service')
+    if not service_name:
+        emit('error', {'message': 'Service name required'})
+        return
+
+    schedules = get_service_schedules(service_name)
+    emit('schedules_data', {
+        'service': service_name,
+        'schedules': [{
+            'id': s[0],
+            'schedule_text': s[1],
+            'operation': s[2]
+        } for s in schedules]
+    })
+
+
+@socketio.on('save_schedule')
+def handle_save_schedule(data):
+    if not is_authenticated(data.get('session_id')):
+        emit('error', {'message': 'Authentication required'})
+        return
+
+    service_name = data.get('service')
+    schedule_text = data.get('schedule_text')
+    operation = data.get('operation')
+
+    if not all([service_name, schedule_text, operation]):
+        emit('error', {'message': 'All fields required'})
+        return
+
+    save_service_schedule(service_name, schedule_text, operation)
+    emit('schedule_updated', {
+        'service': service_name,
+        'schedule_text': schedule_text,
+        'operation': operation
+    }, broadcast=True)
+
+
+@socketio.on('delete_schedule')
+def handle_delete_schedule(data):
+    if not is_authenticated(data.get('session_id')):
+        emit('error', {'message': 'Authentication required'})
+        return
+
+    schedule_id = data.get('schedule_id')
+    if not schedule_id:
+        emit('error', {'message': 'Schedule ID required'})
+        return
+
+    delete_service_schedule(schedule_id)
+    emit('schedule_deleted', {'schedule_id': schedule_id}, broadcast=True)
+
+
 if __name__ == '__main__':
-    app.run(
-        port=PORT,
-        debug=DEBUG,
-    )
+    schedule_thread = threading.Thread(target=schedule_checker_loop, daemon=True)
+    schedule_thread.start()
+    socketio.run(app, port=PORT, debug=DEBUG)

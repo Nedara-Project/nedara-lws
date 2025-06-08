@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.37.1/min/vs/editor/editor.main.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.min.js"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='lib/jquery/jquery.min.js') }}"></script>
     <script type="module" src="{{ url_for('static', filename='lib/nedara/nedara.min.js') }}"></script>
     <script type="module" src="{{ url_for('static', filename='lws.js') }}"></script>
@@ -97,6 +98,39 @@
                             <span class="file-path"></span>
                             <i class="fas fa-external-link-alt"></i>
                         </button>
+                    </div>
+                </div>
+                <div class="schedule-section" style="margin-top: 1rem;">
+                    <h4 for="schedule-input">
+                        <i class="fas fa-clock"></i>
+                        Scheduler
+                    </h4>
+                    <small class="form-text text-muted">
+                        Natural language schedule powered by AI
+                    </small>
+                    <div class="input-group" style="margin-top: 1rem;">
+                        <input type="text" id="schedule-input" class="form-control"
+                            placeholder="e.g. everyday at 10pm, on sunday at 9:00 am">
+                        <select id="operation-select" class="form-control" style="margin-top: 0.5rem;">
+                            <option value="start">Start</option>
+                            <option value="stop">Stop</option>
+                            <option value="restart">Restart</option>
+                        </select>
+                        <button class="btn btn-primary" style="margin-top: 1rem;" id="add-schedule">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </div>
+                    <div class="schedules-list">
+                        <table class="table" style="width: 100%; margin-top: 1rem;">
+                            <thead>
+                                <tr style="text-align: left;">
+                                    <th>Schedule</th>
+                                    <th>Operation</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="schedules-table-body"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>

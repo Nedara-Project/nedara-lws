@@ -14,6 +14,8 @@ const lwsMain = Nedara.createWidget({
         "click button.reload-file": "_onReloadFileBtnClick",
         "click button.open-editor": "_onOpenEditorClick",
         "click button.close-editor": "_onCloseEditorClick",
+        "click #add-schedule": "_onAddScheduleClick",
+        "click .delete-schedule": "_onDeleteScheduleClick",
     },
 
     start: function () {
@@ -21,6 +23,30 @@ const lwsMain = Nedara.createWidget({
         this.handleSession();
         this.handleLastSelect();
         this.loadFile();
+
+        this.socket = io();
+
+        this.socket.on('connect', () => {
+            this.loadInitialData();
+        });
+
+        this.socket.on('schedules_data', (data) => {
+            this.updateSchedulesTable(data);
+        });
+
+        this.socket.on('schedule_updated', (data) => {
+            if (data.service === this.getSelectedService()) {
+                this.loadSchedules(data.service);
+            }
+        });
+
+        this.socket.on('schedule_deleted', (data) => {
+            this.$selector.find(`tr[data-schedule-id="${data.schedule_id}"]`).remove();
+        });
+
+        this.socket.on('error', (data) => {
+            confirm(data.message);
+        });
     },
 
     // ************************************************************
@@ -59,10 +85,15 @@ const lwsMain = Nedara.createWidget({
         });
     },
     _onServiceSelectChange: function (ev) {
-        let selectedService = $(ev.currentTarget).find(":selected").val();
+        const selectedService = $(ev.currentTarget).find(":selected").val();
         localStorage.setItem("selectedService", selectedService);
-        // Load file content for the selected service
         this.loadFileContent(selectedService);
+        if (this.socket.connected) {
+            this.socket.emit('get_schedules', {
+                session_id: localStorage.getItem("session_id"),
+                service: selectedService,
+            });
+        }
     },
     _onThemeSelectChange: function (ev) {
         let selectedTheme = $(ev.currentTarget).val();
@@ -197,6 +228,35 @@ const lwsMain = Nedara.createWidget({
         this.$selector.find('.fullscreen-editor').hide();
         this.$selector.find('.navbar').show();
         this.$selector.find('main').show();
+    },
+    _onAddScheduleClick: function () {
+        const scheduleText = this.$selector.find("#schedule-input").val();
+        const operation = this.$selector.find("#operation-select").val();
+        const service = this.getSelectedService();
+
+        if (!scheduleText) {
+            confirm("Please enter a schedule");
+            return;
+        }
+
+        this.socket.emit('save_schedule', {
+            session_id: localStorage.getItem("session_id"),
+            service: service,
+            schedule_text: scheduleText,
+            operation: operation,
+        });
+
+        this.$selector.find("#schedule-input").val("");
+    },
+    _onDeleteScheduleClick: function (ev) {
+        const scheduleId = $(ev.currentTarget).data("schedule-id");
+
+        if (confirm("Are you sure you want to delete this schedule ?")) {
+            this.socket.emit('delete_schedule', {
+                session_id: localStorage.getItem("session_id"),
+                schedule_id: scheduleId,
+            });
+        }
     },
 
     // ************************************************************
@@ -419,6 +479,61 @@ const lwsMain = Nedara.createWidget({
             this.editor.revealPositionInCenter({ lineNumber: 1, column: 1 });
             this.editor.setScrollPosition({ scrollTop: 0 });
         }
+    },
+    getSelectedService: function () {
+        return this.$selector.find("select[name='service'] > option:selected").val();
+    },
+    loadInitialData: function () {
+        const service = this.getSelectedService();
+        if (service) {
+            this.socket.emit('get_schedules', {
+                session_id: localStorage.getItem("session_id"),
+                service: service,
+            });
+        }
+    },
+    updateSchedulesTable: function (data) {
+        const tbody = this.$selector.find("#schedules-table-body");
+        tbody.empty();
+        if (data.schedules.length === 0) {
+            tbody.append(`
+                <tr>
+                    <td colspan="3" class="text-center text-muted">
+                        No scheduled operations for this service
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+        data.schedules.forEach(schedule => {
+            tbody.append(`
+                <tr data-schedule-id="${schedule.id}">
+                    <td>${schedule.schedule_text}</td>
+                    <td>${schedule.operation}</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger delete-schedule"
+                                data-schedule-id="${schedule.id}">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </td>
+                </tr>
+            `);
+        });
+    },
+    loadSchedules: function (serviceKey) {
+        if (!serviceKey) {
+            return;
+        }
+
+        if (!this.socket || !this.socket.connected) {
+            console.error("Socket.IO not connected");
+            return;
+        }
+
+        this.socket.emit('get_schedules', {
+            session_id: localStorage.getItem("session_id"),
+            service: serviceKey,
+        });
     },
 });
 
