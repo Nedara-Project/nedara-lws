@@ -2,6 +2,8 @@
 
 **Nedara LWS** is a lightweight and secure web interface to remotely manage Linux services (start, stop, status) via a simple and customizable UI. It is designed for server administrators and developers who want a centralized control panel for their systemd services.
 
+![Interface](./demo/interface.png)
+
 ---
 
 ## 🚀 Features
@@ -165,14 +167,14 @@ Create a systemd service unit (example):
 
 ```ini
 [Unit]
-Description=Linux Web Service Manager (gunicorn)
+Description=Nedara LWS - Linux Web Service Manager
 After=network.target
 
 [Service]
 User=nedarasudo
 WorkingDirectory=/home/your_user/nedara-lws/
 Environment="PATH=/home/your_user/.virtualenvs/YOURENV/bin"
-ExecStart=/home/kea/.virtualenvs/YOURENV/bin/python3 app.py
+ExecStart=/home/your_user/.virtualenvs/YOURENV/bin/python3 app.py
 
 # Example for Gunicorn - not required
 #ExecStart=/home/your_user/.virtualenvs/YOURENV/bin/gunicorn -k gevent -b 0.0.0.0:8000 -w 1 app:app
@@ -222,13 +224,9 @@ sudo systemctl reload nginx
 
 ## 🤖 AI Scheduler
 
-Nedara LWS includes an intelligent scheduler powered by the **phi3:mini** AI model. This feature provides:
+Nedara LWS includes an intelligent scheduler powered by the **phi3:mini** AI model.
 
-- Intelligent service management recommendations
-- Automated scheduling suggestions based on system load and usage patterns
-- Smart monitoring alerts and maintenance scheduling
-
-The AI scheduler uses the phi3:mini model running through Ollama to analyze system metrics and provide intelligent insights for service management.
+The AI scheduler uses the phi3:mini model running through Ollama to handle service management operations.
 
 ---
 
@@ -240,12 +238,7 @@ Authentication is handled via encrypted tokens using the Fernet symmetric encryp
 
 ## 🌐 Real-time Communication
 
-The application uses Socket.IO for real-time communication between the server and clients, providing:
-
-- Live service status updates
-- Real-time system monitoring
-- Instant notifications for service state changes
-- Interactive AI scheduler feedback
+The application uses Socket.IO for real-time communication between the server and clients.
 
 ---
 
@@ -293,10 +286,3 @@ This project is open-source under the [MIT License](LICENSE).
 ---
 
 **Made with ❤️ by the [Nedara Project](https://github.com/Nedara-Project)**
-
-## Screenshots
-
-![Screenshot1](./demo/demo1.png)
-![Screenshot2](./demo/demo2.png)
-![Screenshot3](./demo/demo3.png)
-![Screenshot4](./demo/demo4.png)
