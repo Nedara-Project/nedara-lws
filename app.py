@@ -102,11 +102,6 @@ def is_authenticated(session_id):
     return session_id in SESSIONS
 
 
-def get_file_path(service):
-    """Get the configuration file path for a service."""
-    return SERVICE_FILES.get(service)
-
-
 def read_file(file_path):
     """Read the content of a file."""
     try:
@@ -278,33 +273,68 @@ def perform_action():
     }
 
 
+def _get_service_file_info(service, file_index=0):
+    """Helper function to get file information for a service.
+    Returns a tuple of (file_path, file_list, error_response) or None if error occurs."""
+    if not service or service not in SERVICE_FILES:
+        return None, None, {
+            'status': 'error',
+            'error': f'No configuration file defined for service: {service}'
+        }
+
+    files = SERVICE_FILES.get(service)
+    if not files:
+        return None, None, {
+            'status': 'error',
+            'error': f'No configuration file defined for service: {service}'
+        }
+
+    file_list = [files] if isinstance(files, str) else files
+
+    try:
+        file_index = int(file_index)
+        if file_index < 0 or file_index >= len(file_list):
+            return None, None, {
+                'status': 'error',
+                'error': f'Invalid file index: {file_index}'
+            }
+    except (ValueError, TypeError):
+        file_index = 0
+
+    return file_list[file_index], file_list, None
+
+
 @app.route('/lws/get_file_content', methods=['POST'])
 def get_file_content():
     """Get the content of a service configuration file."""
     data = request.get_json()
     session_id = data.get('session_id')
     service = data.get('service')
+    file_index = data.get('file_index', 0)
+
     if not is_authenticated(session_id):
         return {
             'status': 'error',
             'error': 'Authentication required'
         }
-    if not service or service not in SERVICE_FILES:
-        return {
-            'status': 'error',
-            'error': f'No configuration file defined for service: {service}'
-        }
-    file_path = SERVICE_FILES.get(service)
+
+    file_path, file_list, error_response = _get_service_file_info(service, file_index)
+    if error_response:
+        return error_response
+
     content, error = read_file(file_path)
     if error:
         return {
             'status': 'error',
             'error': error
         }
+
     return {
         'status': 'success',
         'content': content,
-        'file_path': os.path.join("..", os.path.basename(file_path))
+        'file_path': os.path.join("..", os.path.basename(file_path)),
+        'file_index': file_index,
+        'file_count': len(file_list),
     }
 
 
@@ -315,31 +345,36 @@ def save_file_content():
     session_id = data.get('session_id')
     service = data.get('service')
     content = data.get('content')
+    file_index = data.get('file_index', 0)
+
     if not is_authenticated(session_id):
         return {
             'status': 'error',
             'error': 'Authentication required'
         }
-    if not service or service not in SERVICE_FILES:
-        return {
-            'status': 'error',
-            'error': f'No configuration file defined for service: {service}'
-        }
+
     if content is None:
         return {
             'status': 'error',
             'error': 'No content provided'
         }
-    file_path = SERVICE_FILES.get(service)
+
+    file_path, file_list, error_response = _get_service_file_info(service, file_index)
+    if error_response:
+        return error_response
+
     success, error = write_file(file_path, content)
     if not success:
         return {
             'status': 'error',
             'error': error
         }
+
     return {
         'status': 'success',
-        'message': f'File saved successfully: {file_path}'
+        'message': f'File saved successfully: {file_path}',
+        'file_index': file_index,
+        'file_count': len(file_list)
     }
 
 

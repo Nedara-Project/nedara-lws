@@ -118,7 +118,7 @@ print("token_app =", token.decode())  # Copy this value to "token_app" in config
   "port": 5000,
   "secret_key": "your_secret_key_here",
   "debug": false,
-  "monitoring_url": "http://localhost:5000/monitoring",
+  "monitoring_url": "http://localhost:5001/monitoring",
   "disable_system_info": true,
   "fernet_key": "YHgy3YkxuXQbaN9bWZ_VBz8ARgN-KgMTt70qBkO9xoI=...example",
   "token_app": "gAAAAABkUrpK3kV...example",
@@ -127,8 +127,11 @@ print("token_app =", token.decode())  # Copy this value to "token_app" in config
     "postgres": "postgresql.service"
   },
   "service_files": {
-    "nginx": "/path/to/your/file",
-    "postgres": "/path/to/your/file"
+      "nginx": "",
+      "postgres": [
+          "/path/to/your/file",
+          "/path/to/your/file2"
+      ]
   }
 }
 ```

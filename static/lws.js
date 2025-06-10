@@ -16,6 +16,8 @@ const lwsMain = Nedara.createWidget({
         "click button.close-editor": "_onCloseEditorClick",
         "click #add-schedule": "_onAddScheduleClick",
         "click .delete-schedule": "_onDeleteScheduleClick",
+        "click button.next-file": "_onNextFileClick",
+        "click button.prev-file": "_onPrevFileClick",
     },
 
     start: function () {
@@ -188,10 +190,14 @@ const lwsMain = Nedara.createWidget({
                 session_id: localStorage.getItem("session_id"),
                 service: selectedService,
                 content: fileContent,
+                file_index: this.currentFileIndex || 0,
             }),
             success: function (response) {
                 self.toggleLoader();
                 if (response.status === "success") {
+                    self.currentFileIndex = response.file_index;
+                    self.currentFileCount = response.file_count;
+                    self.updateFileNavigationControls();
                     self.$selector.find(".save-success").show();
                     setTimeout(() => {
                         self.$selector.find(".save-success").fadeOut();
@@ -256,6 +262,21 @@ const lwsMain = Nedara.createWidget({
                 session_id: localStorage.getItem("session_id"),
                 schedule_id: scheduleId,
             });
+        }
+    },
+    _onNextFileClick: function () {
+        const currentIndex = this.currentFileIndex || 0;
+        const fileCount = this.currentFileCount || 1;
+        if (currentIndex < fileCount - 1) {
+            this.currentFileIndex = currentIndex + 1;
+            this.loadFileContent(this.getSelectedService(), this.currentFileIndex);
+        }
+    },
+    _onPrevFileClick: function () {
+        const currentIndex = this.currentFileIndex || 0;
+        if (currentIndex > 0) {
+            this.currentFileIndex = currentIndex - 1;
+            this.loadFileContent(this.getSelectedService(), this.currentFileIndex);
         }
     },
 
@@ -375,7 +396,7 @@ const lwsMain = Nedara.createWidget({
             }
         }
     },
-    loadFileContent: function (serviceKey) {
+    loadFileContent: function (serviceKey, fileIndex = 0) {
         let self = this;
         if (!serviceKey) {
             return;
@@ -388,14 +409,20 @@ const lwsMain = Nedara.createWidget({
             data: JSON.stringify({
                 session_id: localStorage.getItem("session_id"),
                 service: serviceKey,
+                file_index: fileIndex,
             }),
             success: function (response) {
                 self.resetEditorPosition();
                 self.toggleLoader();
                 if (response.status === "success") {
+                    self.currentFileIndex = response.file_index;
+                    self.currentFileCount = response.file_count;
+
                     const filePath = response.file_path;
                     self.$selector.find(".file-path").text(filePath);
                     self.$selector.find(".editor-file-path").text(filePath);
+                    self.updateFileNavigationControls();
+
                     if (filePath) {
                         self.$selector.find(".no-file-message").hide();
                         self.$selector.find(".file-available").show();
@@ -422,6 +449,13 @@ const lwsMain = Nedara.createWidget({
                 self.$selector.find(".file-available").hide();
             },
         });
+    },
+    updateFileNavigationControls: function () {
+        const currentIndex = this.currentFileIndex || 0;
+        const fileCount = this.currentFileCount || 1;
+        this.$selector.find("button.prev-file").prop("disabled", currentIndex <= 0);
+        this.$selector.find("button.next-file").prop("disabled", currentIndex >= fileCount - 1);
+        this.$selector.find(".file-position").text(`File ${currentIndex + 1} of ${fileCount}`);
     },
     setEditorLanguage: function (filePath) {
         if (!filePath || !this.editor) {

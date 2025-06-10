@@ -2,7 +2,7 @@
     "port": 5000,
     "secret_key": "YOUR_SECRET_KEY",
     "debug": false,
-    "monitoring_url": "http://localhost:5000/monitoring",
+    "monitoring_url": "http://localhost:5001/monitoring",
     "disable_system_info": true,
     "fernet_key": "YOUR_FERNET_KEY_BASE64",
     "token_app": "YOUR_TOKEN_APP_BASE64",
@@ -12,6 +12,9 @@
     },
     "service_files": {
         "nginx": "",
-        "postgres": "/path/to/your/file"
+        "postgres": [
+            "/path/to/your/file",
+            "/path/to/your/file2"
+        ]
     }
 }
