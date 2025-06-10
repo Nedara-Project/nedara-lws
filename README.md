@@ -280,8 +280,6 @@ This project is open-source under the [MIT License](LICENSE).
 
 - Use HTTPS in production (with Nginx + Let's Encrypt)
 - Restrict access by IP or VPN
-- Consider integrating LDAP or OAuth in future releases
-- Monitor AI model performance and adjust scheduling parameters as needed
 
 ---
 
