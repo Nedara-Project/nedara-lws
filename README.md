@@ -76,7 +76,10 @@ Define the list of services you want to manage (and potentially any config files
   },
   "service_files": {
     "My App": "",
-    "Database": "/path/to/your/file"
+    "Database": [
+      "/path/to/your/file",
+      "/path/to/your/file2"
+    ]
   }
 }
 ```
