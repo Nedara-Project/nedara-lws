@@ -155,18 +155,16 @@ def get_formatted_datetime():
     hours_24 = now.hour
     hours_12 = now.strftime("%I")
     minutes = now.strftime("%M")
-    return f"{day} {month} {year} {hours_24}:{minutes} ({hours_12}:{minutes})"
+    am_pm = now.strftime("%p")
+    return f"{day} {month} {year} {hours_24}:{minutes} ({hours_12}:{minutes} {am_pm})"
 
 
-def ask_phi3(prompt):
+def ask_phi(prompt):
     response = ollama.generate(
-        model='phi3:mini',
+        model='phi4-mini',
         prompt=prompt,
         options={
-            'temperature': 0.3,
-            'num_ctx': 1024,
-            'num_threads': 2,
-            'num_predict': 10,
+            'temperature': 0,
         }
     )
     return response['response']
@@ -174,6 +172,7 @@ def ask_phi3(prompt):
 
 def schedule_checker_loop():
     while True:
+        response = None
         try:
             with get_db_connection() as conn:
                 cursor = conn.cursor()
@@ -182,24 +181,43 @@ def schedule_checker_loop():
                 formatted_datetime = get_formatted_datetime()
 
                 for service_name, schedule_text, operation in services:
-                    response = ask_phi3(f"""
-                        Respond STRICTLY with a single character:
-                        - "1" if the current time ({formatted_datetime}) matches "{schedule_text}"
-                        with the same hour and minute.
-                        - "0" otherwise.
-                        DO NOT write ANYTHING else—no symbols, no punctuation, no disclaimers.
-                    """)
+                    prompt = f"""
+                        1. The current server time, given in the format:
+                        - Day, Month, Year
+                        - Hour:Minute (24-hour format, with 12-hour format AM/PM if needed)
 
-                    if int(response.strip()[:1]):
-                        if not DEBUG:
+                        2. A user input string in natural language that specifies a recurring schedule, for example:
+                        - "everyday at 10pm"
+                        - "every Monday at 6:30am"
+                        - "every 1st of the month at 08:00"
+
+                        I want you to check if the current server time matches the user's schedule, meaning:
+                        Is now the correct time to execute the scheduled task? It must be the exact hours and minutes.
+
+                        Your response should be only 1 if it matches and the task should run, or 0 otherwise.
+                        No explanations, no code, no additional text — just return 0 or 1.
+
+                        Here is the current server time: {formatted_datetime}
+                        Here is the user input: "{schedule_text}"
+                    """
+                    response = ask_phi(prompt)
+
+                    if DEBUG:
+                        print(f"DEBUG: {prompt}")
+                        print(f"DEBUG: Response from AI: {response}")
+                    if response and int(response.strip()):
+                        if not DEBUG and int(response.strip()[1:]) == 1:
                             service_command = [SUDO_PATH, "-n", SYSTEMCTL_PATH, operation, SERVICES.get(service_name)]
                             subprocess.run(service_command)
-                        print(f"Executed {operation} on {service_name} as scheduled")
+                            print(f"Executed {operation} on {service_name} as scheduled")
                         if DEBUG:
                             print(f"DEBUG: {service_name} -> {operation} -> {schedule_text} | {formatted_datetime}")
 
         except Exception as e:
-            print(f"Error in schedule checker: {str(e)}")
+            if response:
+                print(f"Error in schedule checker: {str(e)}")
+            else:
+                print("No response from AI")
 
         time.sleep(60)
 

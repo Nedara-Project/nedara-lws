@@ -10,7 +10,7 @@
 
 - Start, stop, restart and check the status of Linux services
 - Real-time updates via WebSocket (Socket.IO)
-- AI-powered scheduler using phi3:mini model for intelligent service management
+- AI-powered scheduler using phi4-mini model for intelligent service management
 - Simple password-based authentication (encrypted with Fernet)
 - Lightweight and easy to deploy with Flask
 - Easily extensible with a `config.json` to define your services (use `config.json.example` template)
@@ -26,14 +26,14 @@
 - `sudo` and `systemctl` installed on the server
 - A dedicated Linux user with passwordless sudo access
 - **Ollama** installed on the system
-- **phi3:mini** model for AI scheduling capabilities
+- **phi4-mini** model for AI scheduling capabilities
 - SQLite database (`apt install sqlite3`)
 
 ---
 
 ## 🔧 Configuration
 
-### 1. Install Ollama and phi3:mini
+### 1. Install Ollama and phi4-mini
 
 First, install Ollama on your system:
 
@@ -42,13 +42,13 @@ First, install Ollama on your system:
 curl -fsSL https://ollama.com/install.sh | sh
 ```
 
-Then install the phi3:mini model:
+Then install the phi4-mini model:
 
 ```bash
-ollama run phi3:mini
+ollama run phi4-mini
 ```
 
-> 📖 For more information about the phi3:mini model, visit: https://ollama.com/library/phi3:mini
+> 📖 For more information about the phi4-mini model, visit: https://ollama.com/library/phi4-mini
 
 ### 2. Install Dependencies
 
@@ -230,9 +230,9 @@ sudo systemctl reload nginx
 
 ## 🤖 AI Scheduler
 
-Nedara LWS includes an intelligent scheduler powered by the **phi3:mini** AI model.
+Nedara LWS includes an intelligent scheduler powered by the **phi4-mini** AI model.
 
-The AI scheduler uses the phi3:mini model running through Ollama to handle service management operations.
+The AI scheduler uses the phi4-mini model running through Ollama to handle service management operations.
 
 ---
 
