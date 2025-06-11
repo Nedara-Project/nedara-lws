@@ -6,9 +6,9 @@ import string
 import random
 import json
 import os
-import ollama
 import threading
 import time
+import re
 
 from flask import Flask, render_template, request
 from cryptography.fernet import Fernet
@@ -159,65 +159,88 @@ def get_formatted_datetime():
     return f"{day} {month} {year} {hours_24}:{minutes} ({hours_12}:{minutes} {am_pm})"
 
 
-def ask_phi(prompt):
-    response = ollama.generate(
-        model='phi4-mini',
-        prompt=prompt,
-        options={
-            'temperature': 0,
-        }
-    )
-    return response['response']
+def parse_schedule(schedule_text):
+    schedule_text = schedule_text.lower().strip()
+    patterns = {
+        'daily': r'every\s*day|everyday',
+        'weekly': r'every\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)',
+        'monthly': r'every\s+(\d{1,2})(st|nd|rd|th)?\s+of\s+the\s+month',
+        'time': r'at\s+(\d{1,2}):?(\d{2})?\s*(am|pm)?'
+    }
+    result = {'type': None, 'hour': None, 'minute': 0, 'day_of_week': None, 'day_of_month': None}
+
+    if re.search(patterns['daily'], schedule_text):
+        result['type'] = 'daily'
+    elif match := re.search(patterns['weekly'], schedule_text):
+        result['type'] = 'weekly'
+        days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+        result['day_of_week'] = days.index(match.group(1))
+    elif match := re.search(patterns['monthly'], schedule_text):
+        result['type'] = 'monthly'
+        result['day_of_month'] = int(match.group(1))
+
+    if time_match := re.search(patterns['time'], schedule_text):
+        hour = int(time_match.group(1))
+        minute = int(time_match.group(2)) if time_match.group(2) else 0
+        am_pm = time_match.group(3)
+
+        if am_pm:
+            if am_pm == 'pm' and hour != 12:
+                hour += 12
+            elif am_pm == 'am' and hour == 12:
+                hour = 0
+
+        result['hour'] = hour
+        result['minute'] = minute
+
+    return result
+
+
+def should_run_now(schedule_text):
+    try:
+        parsed = parse_schedule(schedule_text)
+        now = datetime.now()
+
+        if parsed['hour'] is None or parsed['hour'] != now.hour or parsed['minute'] != now.minute:
+            return 0
+        if parsed['type'] == 'daily':
+            return 1
+        elif parsed['type'] == 'weekly':
+            return 1 if now.weekday() == parsed['day_of_week'] else 0
+        elif parsed['type'] == 'monthly':
+            return 1 if now.day == parsed['day_of_month'] else 0
+
+        return 0
+    except:
+        return 0
 
 
 def schedule_checker_loop():
     while True:
-        response = None
         try:
             with get_db_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute("SELECT service_name, schedule_text, operation FROM service_schedules")
                 services = cursor.fetchall()
-                formatted_datetime = get_formatted_datetime()
+
+                current_time = datetime.now().strftime("%A, %B %d, %Y - %H:%M")
 
                 for service_name, schedule_text, operation in services:
-                    prompt = f"""
-                        1. The current server time, given in the format:
-                        - Day, Month, Year
-                        - Hour:Minute (24-hour format, with 12-hour format AM/PM if needed)
-
-                        2. A user input string in natural language that specifies a recurring schedule, for example:
-                        - "everyday at 10pm"
-                        - "every Monday at 6:30am"
-                        - "every 1st of the month at 08:00"
-
-                        I want you to check if the current server time matches the user's schedule, meaning:
-                        Is now the correct time to execute the scheduled task? It must be the exact hours and minutes.
-
-                        Your response should be only 1 if it matches and the task should run, or 0 otherwise.
-                        No explanations, no code, no additional text — just return 0 or 1.
-
-                        Here is the current server time: {formatted_datetime}
-                        Here is the user input: "{schedule_text}"
-                    """
-                    response = ask_phi(prompt)
+                    should_run = should_run_now(schedule_text)
 
                     if DEBUG:
-                        print(f"DEBUG: {prompt}")
-                        print(f"DEBUG: Response from AI: {response}")
-                    if response and int(response.strip()):
-                        if not DEBUG and int(response.strip()[1:]) == 1:
+                        print(f"DEBUG: {service_name} -> {schedule_text} -> {should_run} | {current_time}")
+
+                    if should_run:
+                        if not DEBUG:
                             service_command = [SUDO_PATH, "-n", SYSTEMCTL_PATH, operation, SERVICES.get(service_name)]
                             subprocess.run(service_command)
                             print(f"Executed {operation} on {service_name} as scheduled")
-                        if DEBUG:
-                            print(f"DEBUG: {service_name} -> {operation} -> {schedule_text} | {formatted_datetime}")
+                        else:
+                            print(f"DEBUG: Would execute {operation} on {service_name}")
 
         except Exception as e:
-            if response:
-                print(f"Error in schedule checker: {str(e)}")
-            else:
-                print("No response from AI")
+            print(f"Error in schedule checker: {e}")
 
         time.sleep(60)
 

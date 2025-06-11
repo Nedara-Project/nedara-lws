@@ -10,7 +10,7 @@
 
 - Start, stop, restart and check the status of Linux services
 - Real-time updates via WebSocket (Socket.IO)
-- AI-powered scheduler using phi4-mini model for intelligent service management
+- Scheduler for service management
 - Simple password-based authentication (encrypted with Fernet)
 - Lightweight and easy to deploy with Flask
 - Easily extensible with a `config.json` to define your services (use `config.json.example` template)
@@ -25,46 +25,27 @@
 - Socket.IO for real-time communication
 - `sudo` and `systemctl` installed on the server
 - A dedicated Linux user with passwordless sudo access
-- **Ollama** installed on the system
-- **phi4-mini** model for AI scheduling capabilities
 - SQLite database (`apt install sqlite3`)
 
 ---
 
 ## 🔧 Configuration
 
-### 1. Install Ollama and phi4-mini
-
-First, install Ollama on your system:
-
-```bash
-# Visit https://ollama.com for detailed installation instructions
-curl -fsSL https://ollama.com/install.sh | sh
-```
-
-Then install the phi4-mini model:
-
-```bash
-ollama run phi4-mini
-```
-
-> 📖 For more information about the phi4-mini model, visit: https://ollama.com/library/phi4-mini
-
-### 2. Install Dependencies
+### 1. Install Dependencies
 
 You can use a virtual environment (optional but recommended):
 
 ```bash
 python3 -m venv venv  # alternatively use virtualenvwrapper
 source venv/bin/activate
-pip install flask cryptography psutil ollama python-socketio gevent gevent-websocket
+pip install flask cryptography psutil python-socketio gevent gevent-websocket
 ```
 
 Alternatively you can use `gunicorn` - do not forget to `pip install gunicorn` then.
 
 ---
 
-### 3. Create `config.json`
+### 2. Create `config.json`
 
 Define the list of services you want to manage (and potentially any config files — mandatory for each service):
 
@@ -86,7 +67,7 @@ Define the list of services you want to manage (and potentially any config files
 
 ---
 
-### 4. Set up your Encryption Key & Token
+### 3. Set up your Encryption Key & Token
 
 Your configuration is now stored in `config.json`.
 
@@ -145,7 +126,7 @@ print("token_app =", token.decode())  # Copy this value to "token_app" in config
 
 ---
 
-### 5. Create a Dedicated User (`nedarasudo`)
+### 4. Create a Dedicated User (`nedarasudo`)
 
 To ensure safe and isolated execution of commands:
 
@@ -225,14 +206,6 @@ Reload Nginx:
 ```bash
 sudo systemctl reload nginx
 ```
-
----
-
-## 🤖 AI Scheduler
-
-Nedara LWS includes an intelligent scheduler powered by the **phi4-mini** AI model.
-
-The AI scheduler uses the phi4-mini model running through Ollama to handle service management operations.
 
 ---
 

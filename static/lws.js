@@ -18,6 +18,9 @@ const lwsMain = Nedara.createWidget({
         "click .delete-schedule": "_onDeleteScheduleClick",
         "click button.next-file": "_onNextFileClick",
         "click button.prev-file": "_onPrevFileClick",
+        "click #schedule-help-btn": "_onScheduleHelpClick",
+        "click .close-modal": "_onCloseModalClick",
+        "click .modal": "_onModalOutsideClick",
     },
 
     start: function () {
@@ -277,6 +280,17 @@ const lwsMain = Nedara.createWidget({
         if (currentIndex > 0) {
             this.currentFileIndex = currentIndex - 1;
             this.loadFileContent(this.getSelectedService(), this.currentFileIndex);
+        }
+    },
+    _onScheduleHelpClick: function () {
+        this.$selector.find("#schedule-help-modal").show();
+    },
+    _onCloseModalClick: function () {
+        this.$selector.find("#schedule-help-modal").hide();
+    },
+    _onModalOutsideClick: function (ev) {
+        if (ev.target === this.$selector.find("#schedule-help-modal")[0]) {
+            this.$selector.find("#schedule-help-modal").hide();
         }
     },
 

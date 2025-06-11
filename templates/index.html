@@ -110,20 +110,22 @@
                     </div>
                 </div>
                 <div class="schedule-section" style="margin-top: 1rem;">
-                    <h4 for="schedule-input">
-                        <i class="fas fa-clock"></i>
-                        Scheduler
-                    </h4>
-                    <small class="form-text text-muted">
-                        Natural language schedule powered by AI.
-                    </small>
-                    <br>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4 for="schedule-input">
+                            <i class="fas fa-clock"></i>
+                            Scheduler
+                        </h4>
+                        <button class="btn btn-outline" id="schedule-help-btn">
+                            <i class="fas fa-question-circle"></i>
+                            Documentation
+                        </button>
+                    </div>
                     <small class="form-text text-muted">
                         Server time : {{ system_hour }}.
                     </small>
                     <div class="input-group" style="margin-top: 1rem;">
                         <input type="text" id="schedule-input" class="form-control"
-                            placeholder="e.g. everyday at 10pm, on sunday at 9:00 am">
+                            placeholder="e.g. everyday at 10pm, every Monday at 6:30am, every 1st of the month at 08:00, every friday at 23:45">
                         <select id="operation-select" class="form-control" style="margin-top: 0.5rem;">
                             <option value="start">Start</option>
                             <option value="stop">Stop</option>
@@ -253,6 +255,79 @@
                 </div>
             </div>
             <div id="monaco-editor-container"></div>
+        </div>
+    </div>
+    <div id="schedule-help-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>Schedule Format Guide</h4>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h5>How to write schedules</h5>
+                <p>Use simple English phrases to tell the system when to run your services.</p>
+
+                <h5>Daily schedules</h5>
+                <p>Run every day at a specific time:</p>
+                <ul>
+                    <li><code>everyday at 10pm</code></li>
+                    <li><code>every day at 08:00</code></li>
+                    <li><code>everyday at 6:30am</code></li>
+                </ul>
+
+                <h5>Weekly schedules</h5>
+                <p>Run on a specific day each week:</p>
+                <ul>
+                    <li><code>every Monday at 6:30am</code></li>
+                    <li><code>every friday at 11:45pm</code></li>
+                    <li><code>every Wednesday at 14:00</code></li>
+                </ul>
+                <p>Days: monday, tuesday, wednesday, thursday, friday, saturday, sunday</p>
+
+                <h5>Monthly schedules</h5>
+                <p>Run on a specific day each month:</p>
+                <ul>
+                    <li><code>every 1st of the month at 08:00</code></li>
+                    <li><code>every 15th of the month at 6pm</code></li>
+                    <li><code>every 28th of the month at 23:59</code></li>
+                </ul>
+
+                <h5>Time formats</h5>
+                <p><strong>12-hour format:</strong></p>
+                <ul>
+                    <li><code>6am</code>, <code>6:30am</code>, <code>10pm</code>, <code>11:45pm</code></li>
+                    <li><code>12am</code> = midnight, <code>12pm</code> = noon</li>
+                </ul>
+
+                <p><strong>24-hour format:</strong></p>
+                <ul>
+                    <li><code>08:00</code>, <code>14:30</code>, <code>22:15</code></li>
+                    <li><code>00:00</code> = midnight, <code>23:59</code> = 11:59 PM</li>
+                </ul>
+
+                <h5>Examples</h5>
+                <p>✅ <strong>Correct:</strong></p>
+                <pre>
+everyday at 10pm
+every Monday at 6:30am
+every 1st of the month at 08:00
+every friday at 11:45pm</pre>
+
+                <p>❌ <strong>Wrong:</strong></p>
+                <pre>
+every monday 6:30am          ← missing "at"
+everyday 10pm                ← missing "at"
+every 1 of month at 8pm      ← missing "the"
+every 32nd of the month      ← day doesn't exist</pre>
+
+                <h5>Important rules</h5>
+                <ol>
+                    <li>Always use "every" (not "each")</li>
+                    <li>Always put "at" before the time</li>
+                    <li>Use English only</li>
+                    <li>Maximum day is 31st</li>
+                </ol>
+            </div>
         </div>
     </div>
     <script>var require = { paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.37.1/min/vs' } };</script>
